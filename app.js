@@ -1,12 +1,26 @@
 const STORAGE_KEY = 'vors-studio-0.1.1';
 
 const MATERIAL_CATALOG_SEED = [
-  { id: 'CAT-PEH-UDV-01', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '01', colorName: 'Белый', internalCode: 'PEH-UDV-01', supplier: 'Кудель', supplierSku: '87686', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/?page_type=skus', swatch: '#f1eee5', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-02', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '02', colorName: 'Чёрный', internalCode: 'PEH-UDV-02', supplier: 'Кудель', supplierSku: '87687', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/?page_type=skus', swatch: '#202226', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-04', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '04', colorName: 'Тёмно-синий', internalCode: 'PEH-UDV-04', supplier: 'Кудель', supplierSku: '90239', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/?page_type=skus', swatch: '#182849', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-05', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '05', colorName: 'Голубой', internalCode: 'PEH-UDV-05', supplier: 'Кудель', supplierSku: '277433', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/?page_type=skus', swatch: '#9fc6de', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-08', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '08', colorName: 'Светло-серый', internalCode: 'PEH-UDV-08', supplier: 'Кудель', supplierSku: '277435', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/?page_type=skus', swatch: '#d7d4cf', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-1409', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '1409', colorName: 'Красный терракот', internalCode: 'PEH-UDV-1409', supplier: 'Кудель', supplierSku: '277437', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/?page_type=skus', swatch: '#a94e37', checkedAt: '03.08.2026' }
+  { id: 'CAT-PEH-UDV-01', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '01', colorName: 'Белый', internalCode: 'PEH-UDV-01', supplier: 'Кудель', supplierSku: '87686', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#f3f0e7', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-02', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '02', colorName: 'Чёрный', internalCode: 'PEH-UDV-02', supplier: 'Кудель', supplierSku: '87687', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#202226', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-04', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '04', colorName: 'Тёмно-синий', internalCode: 'PEH-UDV-04', supplier: 'Кудель', supplierSku: '90239', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#1d2b49', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-06', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '06', colorName: 'Красный', internalCode: 'PEH-UDV-06', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#b52f35', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-08', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '08', colorName: 'Светло-серый', internalCode: 'PEH-UDV-08', supplier: 'Кудель', supplierSku: '277435', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#d4d3d0', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-22', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '22', colorName: 'Сирень', internalCode: 'PEH-UDV-22', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#a58aaa', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-45', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '45', colorName: 'Тёмная бирюза', internalCode: 'PEH-UDV-45', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#176c72', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-59', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '59', colorName: 'Мышонок', internalCode: 'PEH-UDV-59', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#a7a39a', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-97', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '97', colorName: 'Апельсин', internalCode: 'PEH-UDV-97', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#e87925', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-98', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '98', colorName: 'Лесной колокольчик', internalCode: 'PEH-UDV-98', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#5f79a7', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-99', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '99', colorName: 'Абрикос', internalCode: 'PEH-UDV-99', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#e9a46f', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-119', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '119', colorName: 'Горох', internalCode: 'PEH-UDV-119', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#9aae4a', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-165', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '165', colorName: 'Тёмно-бежевый', internalCode: 'PEH-UDV-165', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#9a765e', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-434', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '434', colorName: 'Зелёный', internalCode: 'PEH-UDV-434', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#387447', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-435', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '435', colorName: 'Антрацит', internalCode: 'PEH-UDV-435', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#44474b', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-480', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '480', colorName: 'Яркая зелень', internalCode: 'PEH-UDV-480', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#58a847', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-494', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '494', colorName: 'Светлый хаки', internalCode: 'PEH-UDV-494', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#9a9a70', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-573', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '573', colorName: 'Тёмный изумруд', internalCode: 'PEH-UDV-573', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#1d6656', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-1178', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '1178', colorName: 'Светлая морская волна', internalCode: 'PEH-UDV-1178', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#79b4ae', availability: 'Не проверено', checkedAt: '03.08.2026' },
+  { id: 'CAT-PEH-UDV-1409', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '1409', colorName: 'Красный терракот', internalCode: 'PEH-UDV-1409', supplier: 'Кудель', supplierSku: '277437', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#a94e37', availability: 'Не проверено', checkedAt: '03.08.2026' }
 ];
 
 const EMPTY_STATE = {
@@ -35,8 +49,13 @@ const toastRoot = document.getElementById('toastRoot');
 
 function clone(value) { return JSON.parse(JSON.stringify(value)); }
 function mergeCatalog(savedCatalog = []) {
+  const seedIds = new Set(MATERIAL_CATALOG_SEED.map(item => item.id));
   const map = new Map(MATERIAL_CATALOG_SEED.map(item => [item.id, clone(item)]));
-  savedCatalog.forEach(item => map.set(item.id, { ...(map.get(item.id) || {}), ...item }));
+  savedCatalog.forEach(item => {
+    const isOfficialUdachnyVybor = String(item.id || '').startsWith('CAT-PEH-UDV-');
+    if (isOfficialUdachnyVybor && !seedIds.has(item.id)) return;
+    map.set(item.id, { ...(map.get(item.id) || {}), ...item });
+  });
   return [...map.values()];
 }
 function normalizeMaterial(item) {
@@ -333,7 +352,7 @@ function catalogRow(item) {
   const inventory = state.materials.find(m => m.catalogId === item.id);
   return `<div class="material-row catalog-row" data-catalog="${item.id}" data-type="${item.type}" data-name="${materialSearchText(item)}">
     <div class="material-thumb" style="--swatch:${item.swatch || '#e5d8c3'}"></div>
-    <div><div class="item-title">${materialName(item)}</div><div class="item-meta">${item.composition} · ${item.nominalWeight} г / ${item.lengthM} м</div><div class="code-line"><span>${item.internalCode}</span><span>Кудель ${item.supplierSku || '—'}</span></div></div>
+    <div><div class="item-title">${materialName(item)}</div><div class="item-meta">${item.composition} · ${item.nominalWeight} г / ${item.lengthM} м</div><div class="code-line"><span>${item.internalCode}</span><span>${item.supplierSku ? `Кудель ${item.supplierSku}` : 'Артикул Куделя не проверен'}</span></div></div>
     <div><div class="material-label">Цена мотка</div><div class="material-number">${item.lastSkeinPrice ? rub(item.lastSkeinPrice) : '—'}</div></div>
     <div><div class="material-label">На складе</div><div class="material-number">${inventory ? `${num(inventory.stock,1)} г` : '0 г'}</div></div>
     <div class="row-actions"><button class="secondary-btn" data-action="catalog-receipt" data-id="${item.id}">Поступление</button><button class="icon-mini" data-action="edit-catalog-item" data-id="${item.id}" aria-label="Изменить">⋯</button></div>
@@ -365,7 +384,7 @@ function renderOrderDetail(o) {
     <div class="detail-tile" style="margin-top:16px"><small>Пожелания клиента</small><div>${o.note || 'Нет дополнительных пожеланий'}</div></div>
     <div class="card-head" style="margin-top:18px"><h3>История общения</h3><small>${o.history.length} сообщений</small></div>
     <div class="timeline">${o.history.length ? o.history.map(h => `<div class="timeline-item"><span class="timeline-dot"></span><div class="timeline-text"><b>${h.who}</b> · ${h.date}<br>${h.text}</div></div>`).join('') : '<div class="empty"><strong>Переписка пока не добавлена</strong>Сохраняйте важные договорённости и сообщения.</div>'}</div>
-    <div class="production-actions"><button class="primary-btn" data-action="client-status" data-id="${o.id}">Статус для клиента</button><button class="secondary-btn" data-action="order-status" data-id="${o.id}">Изменить статус</button><button class="secondary-btn" data-action="message-template" data-id="${o.id}">Шаблон сообщения</button></div>
+    <div class="production-actions"><button class="primary-btn" data-action="client-status" data-id="${o.id}">Статус для клиента</button><button class="secondary-btn" data-action="order-status" data-id="${o.id}">Изменить статус</button><button class="secondary-btn" data-action="message-template" data-id="${o.id}">Шаблон сообщения</button><button class="danger-btn" data-action="delete-order" data-id="${o.id}">Удалить заказ</button></div>
   </article>`;
 }
 function renderProducts() {
@@ -445,7 +464,9 @@ function navigate(view) { state.view = view; markSaving(); render(); window.scro
 function handleAction(action, id) {
   const actions = {
     'new-project': openNewProject,
+    'delete-project': () => deleteProject(id),
     'new-order': openNewOrder,
+    'delete-order': () => deleteOrder(id),
     'new-material': () => openMaterialReceipt(),
     'new-catalog-item': () => openCatalogEditor(),
     'catalog-receipt': () => openMaterialReceipt(id),
@@ -532,10 +553,43 @@ function openProjectEditor(project = null) {
 }
 function openProject(id) {
   const p = state.projects.find(x => x.id === id); if (!p) return;
-  openModal(p.name, `<div class="status-hero"><div class="status-cover">${visual(p, `Проект ${p.name}`)}</div><div><span class="badge ${statusClass(p.status)}">${p.status}</span><h3 style="font-size:26px;margin:10px 0 5px">${esc(p.name)}</h3><div class="item-meta">${p.id} · ${esc(p.category)}</div><div class="price" style="margin-top:10px">${rub(p.price)}</div></div></div><div class="detail-grid" style="margin-top:18px"><div class="detail-tile"><small>Размер</small><b>${esc(p.size)}</b></div><div class="detail-tile"><small>Материал</small><b>${esc(p.material)}</b></div><div class="detail-tile"><small>Плановый срок</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Готовность</small><b>${p.progress}%</b></div></div><div style="margin-top:16px">${progress(p.progress)}</div>${p.colors?.length ? `<div class="detail-tile" style="margin-top:16px"><small>Палитра</small><div style="display:flex;gap:8px">${p.colors.map(c=>`<i style="width:34px;height:34px;border-radius:50%;background:${c};border:3px solid #fff;box-shadow:0 2px 7px #0002"></i>`).join('')}</div></div>` : ''}<div class="detail-tile" style="margin-top:12px"><small>Заметки</small>${esc(p.notes || 'Нет заметок')}</div>`, `<button class="secondary-btn" data-launch>Запустить в производство</button><button class="primary-btn" data-edit>Изменить</button>`);
+  openModal(p.name, `<div class="status-hero"><div class="status-cover">${visual(p, `Проект ${p.name}`)}</div><div><span class="badge ${statusClass(p.status)}">${p.status}</span><h3 style="font-size:26px;margin:10px 0 5px">${esc(p.name)}</h3><div class="item-meta">${p.id} · ${esc(p.category)}</div><div class="price" style="margin-top:10px">${rub(p.price)}</div></div></div><div class="detail-grid" style="margin-top:18px"><div class="detail-tile"><small>Размер</small><b>${esc(p.size)}</b></div><div class="detail-tile"><small>Материал</small><b>${esc(p.material)}</b></div><div class="detail-tile"><small>Плановый срок</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Готовность</small><b>${p.progress}%</b></div></div><div style="margin-top:16px">${progress(p.progress)}</div>${p.colors?.length ? `<div class="detail-tile" style="margin-top:16px"><small>Палитра</small><div style="display:flex;gap:8px">${p.colors.map(c=>`<i style="width:34px;height:34px;border-radius:50%;background:${c};border:3px solid #fff;box-shadow:0 2px 7px #0002"></i>`).join('')}</div></div>` : ''}<div class="detail-tile" style="margin-top:12px"><small>Заметки</small>${esc(p.notes || 'Нет заметок')}</div>`, `<button class="danger-btn" data-delete>Удалить проект</button><button class="secondary-btn" data-launch>Запустить в производство</button><button class="primary-btn" data-edit>Изменить</button>`);
+  modalRoot.querySelector('[data-delete]').onclick = () => { closeModal(); deleteProject(id); };
   modalRoot.querySelector('[data-launch]').onclick = () => { closeModal(); launchProject(id); };
   modalRoot.querySelector('[data-edit]').onclick = () => { closeModal(); openProjectEditor(p); };
 }
+function deleteProject(id) {
+  const project = state.projects.find(item => item.id === id);
+  if (!project) return;
+  const linkedOrders = state.orders.filter(order => order.projectId === id || order.project === project.name).length;
+  const linkedProductions = state.productions.filter(item => item.projectId === id || item.name === project.name).length;
+  const warning = [
+    `Удалить проект «${project.name}»?`,
+    linkedOrders ? `Связанные заказы: ${linkedOrders}. Они останутся в базе как самостоятельные записи.` : '',
+    linkedProductions ? `Производство: ${linkedProductions}. Производственные карточки останутся, чтобы не потерять историю.` : '',
+    'Это действие нельзя отменить.'
+  ].filter(Boolean).join('\n\n');
+  if (!confirm(warning)) return;
+  state.projects = state.projects.filter(item => item.id !== id);
+  markSaving();
+  state.view = 'projects';
+  render();
+  toast('Проект удалён');
+}
+
+function deleteOrder(id) {
+  const order = state.orders.find(item => item.id === id);
+  if (!order) return;
+  if (!confirm(`Удалить заказ ${order.id} клиента «${order.client}»?\n\nСвязанный проект и производственная карточка останутся. Это действие нельзя отменить.`)) return;
+  state.orders = state.orders.filter(item => item.id !== id);
+  state.shipments = state.shipments.filter(item => item.orderId !== id);
+  state.selectedOrderId = state.orders[0]?.id || null;
+  markSaving();
+  state.view = 'orders';
+  render();
+  toast('Заказ удалён');
+}
+
 function launchProject(projectId) {
   const p = state.projects.find(x=>x.id===projectId); if (!p) return;
   if (state.productions.some(x=>x.projectId===projectId)) return toast('Этот проект уже в производстве');
