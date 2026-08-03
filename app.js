@@ -1,4 +1,4 @@
-const STORAGE_KEY = 'vors-studio-0.1.0';
+const STORAGE_KEY = 'vors-studio-0.1.1';
 
 const DEFAULT_STATE = {
   role: 'owner',
@@ -80,6 +80,21 @@ const DEFAULT_STATE = {
   ]
 };
 
+
+const EMPTY_STATE = {
+  role: 'owner',
+  view: 'today',
+  selectedOrderId: null,
+  tasks: [],
+  projects: [],
+  materials: [],
+  productions: [],
+  orders: [],
+  products: [],
+  finance: { months: [{ m: 'Старт', revenue: 0, profit: 0 }], hours: 0 },
+  shipments: []
+};
+
 let state = loadState();
 let timerInterval = null;
 
@@ -91,10 +106,10 @@ function clone(value) { return JSON.parse(JSON.stringify(value)); }
 function loadState() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    return saved ? { ...clone(DEFAULT_STATE), ...JSON.parse(saved) } : clone(DEFAULT_STATE);
+    return saved ? { ...clone(EMPTY_STATE), ...JSON.parse(saved) } : clone(EMPTY_STATE);
   } catch (error) {
     console.warn('Не удалось загрузить данные', error);
-    return clone(DEFAULT_STATE);
+    return clone(EMPTY_STATE);
   }
 }
 function saveState() {
@@ -177,39 +192,35 @@ function render() {
 }
 
 function renderToday() {
-  const revenue = state.finance.months.at(-1).revenue;
-  const profitValue = state.finance.months.at(-1).profit;
+  const last = state.finance?.months?.at(-1) || { revenue: 0, profit: 0 };
+  const revenue = last.revenue || 0;
+  const profitValue = last.profit || 0;
   const active = state.productions.length;
-  const low = state.materials.filter(m => m.stock < m.min).length;
+  const lowItems = state.materials.filter(m => m.stock < m.min);
+  const nearest = state.orders[0];
   return `
     ${viewHeader('Сегодня', 'Что происходит в мастерской прямо сейчас.', `<button class="primary-btn" data-action="new-order">＋ Новый заказ</button>`)}
     <section class="kpi-grid">
-      ${kpi('Выручка за месяц', rub(revenue), '+7% к прошлому месяцу')}
-      ${kpi('Прибыль', rub(profitValue), '+5% к прошлому месяцу')}
-      ${kpi('В производстве', `${active} ковра`, 'В срок: 2 из 2')}
-      ${kpi('Низкие остатки', `${low} позиции`, low ? 'Нужно пополнить запас' : 'Всё в норме')}
+      ${kpi('Выручка за месяц', rub(revenue), revenue ? 'Данные текущего периода' : 'Пока без продаж')}
+      ${kpi('Прибыль', rub(profitValue), profitValue ? 'После учтённых расходов' : 'Начните с первого заказа')}
+      ${kpi('В производстве', `${active} шт.`, active ? 'Откройте производство' : 'Производство пока пусто')}
+      ${kpi('Низкие остатки', `${lowItems.length} поз.`, lowItems.length ? 'Нужно пополнить запас' : 'Критичных остатков нет')}
     </section>
     <section class="grid dashboard-grid">
       <div class="section-stack">
         <article class="card card-pad">
           <div class="card-head"><h2>Задачи на сегодня</h2><small>${state.tasks.filter(t => !t.done).length} осталось</small></div>
-          <div class="task-list">
-            ${state.tasks.map(t => `<div class="task ${t.done ? 'done' : ''}"><button class="task-check" data-task="${t.id}" aria-label="Отметить задачу"></button><div class="task-name">${t.title}</div><span class="task-time">${t.time}</span></div>`).join('')}
-          </div>
+          <div class="task-list">${state.tasks.length ? state.tasks.map(t => `<div class="task ${t.done ? 'done' : ''}"><button class="task-check" data-task="${t.id}" aria-label="Отметить задачу"></button><div class="task-name">${t.title}</div><span class="task-time">${t.time}</span></div>`).join('') : '<div class="empty"><strong>Задач пока нет</strong>Добавим планирование задач в следующем обновлении.</div>'}</div>
         </article>
         <article class="card card-pad">
           <div class="card-head"><h2>Активные ковры</h2><button class="card-action" data-go="production">Все →</button></div>
-          <div class="list">
-            ${state.productions.map(p => `<div class="item-row"><div class="thumb">${pattern(p.pattern)}</div><div><div class="item-title">${p.name}</div><div class="item-meta">${p.id} · ${p.stages.find(s => s.status === 'active')?.name || 'В работе'}</div>${progress(p.progress)}</div><div class="item-side"><b>${p.progress}%</b><div class="item-meta">${p.elapsedDays}/${p.planDays} дней</div></div></div>`).join('')}
-          </div>
+          <div class="list">${state.productions.length ? state.productions.map(p => `<div class="item-row"><div class="thumb">${pattern(p.pattern)}</div><div><div class="item-title">${p.name}</div><div class="item-meta">${p.id} · ${p.stages.find(s => s.status === 'active')?.name || 'В работе'}</div>${progress(p.progress)}</div><div class="item-side"><b>${p.progress}%</b><div class="item-meta">${p.elapsedDays}/${p.planDays} дней</div></div></div>`).join('') : '<div class="empty"><strong>Производство ещё не запущено</strong>Создайте проект и отправьте его в работу.</div>'}</div>
         </article>
       </div>
       <div class="section-stack">
         <article class="card card-pad">
           <div class="card-head"><h3>Материалы на исходе</h3><button class="card-action" data-go="materials">Склад →</button></div>
-          <div class="list">
-            ${state.materials.filter(m => m.stock < m.min).map(m => `<div class="task"><span class="badge danger">!</span><div><div class="item-title">${m.name}</div><div class="item-meta">Минимум ${num(m.min, 1)} ${m.unit}</div></div><b>${num(m.stock, 1)} ${m.unit}</b></div>`).join('')}
-          </div>
+          <div class="list">${lowItems.length ? lowItems.map(m => `<div class="task"><span class="badge danger">!</span><div><div class="item-title">${m.name}</div><div class="item-meta">Минимум ${num(m.min, 1)} ${m.unit}</div></div><b>${num(m.stock, 1)} ${m.unit}</b></div>`).join('') : '<div class="empty"><strong>Критичных остатков нет</strong>Добавьте материалы и минимальные нормы.</div>'}</div>
         </article>
         <article class="card card-pad">
           <div class="card-head"><h3>Быстрые действия</h3></div>
@@ -221,20 +232,17 @@ function renderToday() {
           </div>
         </article>
         <article class="card card-pad">
-          <div class="card-head"><h3>Ближайший заказ</h3><span class="badge clay">${state.orders[0].status}</span></div>
-          <div class="item-row"><div class="thumb">${pattern(state.orders[0].pattern)}</div><div><div class="item-title">${state.orders[0].project}</div><div class="item-meta">${state.orders[0].client}</div></div><div class="item-side"><b>${state.orders[0].progress}%</b></div></div>
-          <button class="secondary-btn" style="width:100%;margin-top:12px" data-action="client-status" data-id="${state.orders[0].id}">Показать статус клиенту</button>
+          ${nearest ? `<div class="card-head"><h3>Ближайший заказ</h3><span class="badge clay">${nearest.status}</span></div><div class="item-row"><div class="thumb">${pattern(nearest.pattern)}</div><div><div class="item-title">${nearest.project}</div><div class="item-meta">${nearest.client}</div></div><div class="item-side"><b>${nearest.progress}%</b></div></div><button class="secondary-btn" style="width:100%;margin-top:12px" data-action="client-status" data-id="${nearest.id}">Показать статус клиенту</button>` : '<div class="empty"><strong>Заказов пока нет</strong>Создайте первого клиента и заказ.</div>'}
         </article>
       </div>
     </section>`;
 }
-
 function renderProjects() {
   return `
     ${viewHeader('Проекты и коллекции', 'Идеи, расчёты и готовые проекты — в одном месте.', `<button class="primary-btn" data-action="new-project">＋ Новый проект</button>`)}
     <div class="toolbar"><div class="search"><input id="projectSearch" placeholder="Поиск проектов" /></div><div class="chips" id="projectChips"><button class="chip active" data-filter="Все">Все</button>${[...new Set(state.projects.map(p => p.category))].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
     <section class="project-grid" id="projectGrid">
-      ${state.projects.map(projectCard).join('')}
+      ${state.projects.length ? state.projects.map(projectCard).join('') : '<article class="card empty"><strong>Проектов пока нет</strong>Создайте первый дизайн и рассчитайте его стоимость.</article>'}
     </section>`;
 }
 function projectCard(p) {
@@ -250,13 +258,13 @@ function renderProduction() {
   return `
     ${viewHeader('Производство', 'Каждый этап, время, расход и качество — под контролем.', `<button class="primary-btn" data-action="start-production">＋ Запустить ковёр</button>`)}
     <section class="production-list">
-      ${state.productions.map(p => `
+      ${state.productions.length ? state.productions.map(p => `
         <article class="card production-card">
           <div class="production-card-head"><div class="thumb">${pattern(p.pattern)}</div><div style="flex:1"><div class="project-top"><div><div class="project-name">${p.name}</div><div class="project-meta">${p.id}</div></div><span class="badge clay">В работе</span></div><div style="margin-top:10px">${progress(p.progress)}</div></div><div class="item-side"><div class="timer" data-timer="${p.id}">${fmtTime(p.timerSeconds)}</div><div class="item-meta">активное время</div></div></div>
           <div class="grid cols-3" style="margin-top:14px"><div class="detail-tile"><small>План</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Факт</small><b>${p.elapsedDays} дней</b></div><div class="detail-tile"><small>Себестоимость</small><b>${rub(p.cost)}</b></div></div>
           <div class="stages">${p.stages.map((s, i) => `<div class="stage ${s.status}"><span class="stage-index">${s.status === 'done' ? '✓' : i + 1}</span><b>${s.name}</b><span class="badge ${s.status === 'active' ? 'clay' : s.status === 'done' ? 'success' : ''}">${s.status === 'done' ? 'Готово' : s.status === 'active' ? 'В процессе' : 'Ожидает'}</span></div>`).join('')}</div>
           <div class="production-actions"><button class="primary-btn" data-action="timer" data-id="${p.id}">${p.timerRunning ? 'Пауза' : 'Старт таймера'}</button><button class="secondary-btn" data-action="next-stage" data-id="${p.id}">Завершить этап</button><button class="secondary-btn" data-action="production-note" data-id="${p.id}">Заметка</button><button class="secondary-btn" data-action="client-status-by-rug" data-id="${p.id}">Статус клиенту</button></div>
-        </article>`).join('')}
+        </article>`).join('') : '<article class="card empty"><strong>Производство пусто</strong>Сначала создайте проект, затем запустите его в работу.</article>'}
     </section>`;
 }
 
@@ -272,7 +280,7 @@ function renderMaterials() {
       ${kpi('Поставщики', '5 активных', '2 резервных')}
     </section>
     <div class="toolbar"><div class="search"><input id="materialSearch" placeholder="Поиск материалов" /></div><div class="chips" id="materialChips"><button class="chip active" data-filter="Все">Все</button>${[...new Set(state.materials.map(m => m.type))].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
-    <article class="card card-pad"><div class="material-table" id="materialTable">${state.materials.map(materialRow).join('')}</div></article>`;
+    <article class="card card-pad"><div class="material-table" id="materialTable">${state.materials.length ? state.materials.map(materialRow).join('') : '<div class="empty"><strong>Материалов пока нет</strong>Добавьте пряжу, основу, клей и упаковку.</div>'}</div></article>`;
 }
 function materialRow(m) {
   return `<div class="material-row" data-material="${m.id}" data-type="${m.type}" data-name="${m.name.toLowerCase()}">
@@ -286,6 +294,9 @@ function materialRow(m) {
 
 function renderOrders() {
   const selected = state.orders.find(o => o.id === state.selectedOrderId) || state.orders[0];
+  if (!selected) return `
+    ${viewHeader('Клиенты и заказы', 'Покупатели, оплаты, сроки и история общения.', `<button class="primary-btn" data-action="new-order">＋ Новый заказ</button>`)}
+    <article class="card empty"><strong>Клиентов и заказов пока нет</strong>Создайте первый заказ — карточка клиента появится автоматически.</article>`;
   return `
     ${viewHeader('Клиенты и заказы', 'Покупатели, оплаты, сроки и история общения.', `<button class="primary-btn" data-action="new-order">＋ Новый заказ</button>`)}
     <div class="toolbar"><div class="search"><input id="orderSearch" placeholder="Поиск по клиентам и заказам" /></div><div class="chips"><button class="chip active">Все</button><button class="chip">Новые</button><button class="chip">В работе</button><button class="chip">Готовые</button></div></div>
@@ -297,6 +308,7 @@ function renderOrders() {
     </section>`;
 }
 function renderOrderDetail(o) {
+  if (!o) return '<article class="card empty"><strong>Заказ не выбран</strong></article>';
   return `<article class="card card-pad" id="orderDetail">
     <div class="card-head"><div><h2>${o.id}</h2><small>${o.client} · ${o.city}</small></div><span class="badge ${statusClass(o.status)}">${o.status}</span></div>
     <div class="item-row"><div class="thumb">${pattern(o.pattern)}</div><div><div class="item-title">Ковёр «${o.project}»</div><div class="item-meta">${o.size} · ${o.material}</div></div><div class="item-side"><b>${rub(o.amount)}</b></div></div>
@@ -308,31 +320,31 @@ function renderOrderDetail(o) {
     <div class="production-actions"><button class="primary-btn" data-action="client-status" data-id="${o.id}">Статус для клиента</button><button class="secondary-btn" data-action="order-status" data-id="${o.id}">Изменить статус</button><button class="secondary-btn" data-action="message-template" data-id="${o.id}">Шаблон сообщения</button></div>
   </article>`;
 }
-
 function renderProducts() {
   return `
     ${viewHeader('Готовые изделия', 'Товарный склад, цены, хранение и публикации.', `<button class="primary-btn" data-action="new-product">＋ Добавить изделие</button>`)}
     <section class="product-grid">
-      ${state.products.map(p => `<article class="card product-card" data-product="${p.id}"><div class="product-cover">${pattern(p.pattern)}</div><div class="product-body"><div class="product-top"><div><div class="product-name">${p.name}</div><div class="product-meta">${p.id} · ${p.size}</div></div><span class="badge ${statusClass(p.status)}">${p.status}</span></div><div class="project-footer"><span class="price">${rub(p.retail)}</span><span class="product-meta">${p.location}</span></div><div class="production-actions"><button class="secondary-btn" data-action="product-card" data-id="${p.id}">Карточка</button><button class="secondary-btn" data-action="publish-product" data-id="${p.id}">Публикации</button></div></div></article>`).join('')}
+      ${state.products.length ? state.products.map(p => `<article class="card product-card" data-product="${p.id}"><div class="product-cover">${pattern(p.pattern)}</div><div class="product-body"><div class="product-top"><div><div class="product-name">${p.name}</div><div class="product-meta">${p.id} · ${p.size}</div></div><span class="badge ${statusClass(p.status)}">${p.status}</span></div><div class="project-footer"><span class="price">${rub(p.retail)}</span><span class="product-meta">${p.location}</span></div><div class="production-actions"><button class="secondary-btn" data-action="product-card" data-id="${p.id}">Карточка</button><button class="secondary-btn" data-action="publish-product" data-id="${p.id}">Публикации</button></div></div></article>`).join('') : '<article class="card empty"><strong>Готовых изделий пока нет</strong>Они появятся после завершения производства.</article>'}
     </section>`;
 }
 
 function renderFinance() {
-  const last = state.finance.months.at(-1);
-  const avg = state.orders.reduce((s,o)=>s+o.amount,0)/state.orders.length;
-  const perHour = last.profit/state.finance.hours;
-  const max = Math.max(...state.finance.months.map(m => m.revenue));
+  const months = state.finance?.months?.length ? state.finance.months : [{ m: 'Старт', revenue: 0, profit: 0 }];
+  const last = months.at(-1);
+  const avg = state.orders.length ? state.orders.reduce((s,o)=>s+o.amount,0)/state.orders.length : 0;
+  const hours = state.finance?.hours || 0;
+  const perHour = hours ? last.profit/hours : 0;
+  const max = Math.max(1, ...months.map(m => m.revenue || 0));
   return `
     ${viewHeader('Финансы и аналитика', 'Выручка, прибыль, эффективность и точки роста.', `<button class="secondary-btn" data-action="new-expense">＋ Расход</button>`)}
-    <section class="kpi-grid">${kpi('Выручка', rub(last.revenue), '+7% к июлю')}${kpi('Прибыль', rub(last.profit), '+5% к июлю')}${kpi('Средний чек', rub(avg), `${state.orders.length} заказов в базе`)}${kpi('Прибыль за час', rub(perHour), `${num(state.finance.hours,1)} ч учтено`)}</section>
+    <section class="kpi-grid">${kpi('Выручка', rub(last.revenue || 0), 'За выбранный период')}${kpi('Прибыль', rub(last.profit || 0), 'После учтённых расходов')}${kpi('Средний чек', rub(avg), `${state.orders.length} заказов в базе`)}${kpi('Прибыль за час', rub(perHour), `${num(hours,1)} ч учтено`)}</section>
     <section class="grid cols-2">
-      <article class="card card-pad"><div class="card-head"><h2>Динамика за 6 месяцев</h2><small>Выручка / прибыль</small></div><div class="chart">${state.finance.months.map(m => `<div class="bar-wrap"><div class="bar" style="height:${m.revenue/max*100}%"></div><div class="bar profit" style="height:${m.profit/max*100}%"></div><span class="bar-label">${m.m}</span></div>`).join('')}</div><div class="legend"><span><i></i>Выручка</span><span><i class="sand"></i>Прибыль</span></div></article>
-      <article class="card card-pad"><div class="card-head"><h2>Что приносит деньги</h2><small>по проектам</small></div><div class="list">${state.projects.map((p,i)=>`<div class="task"><div class="thumb">${pattern(p.pattern)}</div><div><div class="item-title">${p.name}</div><div class="item-meta">Маржа ${52-i*4}%</div>${progress(80-i*12)}</div><b>${rub(p.price*(.52-i*.04))}</b></div>`).join('')}</div></article>
-      <article class="card card-pad"><div class="card-head"><h2>Залежавшиеся изделия</h2><small>нужны действия</small></div><div class="list">${state.products.map(p=>`<div class="task"><span class="badge ${p.days>14?'danger':'warn'}">${p.days}</span><div><div class="item-title">${p.name}</div><div class="item-meta">дней без продажи</div></div><b>${rub(p.retail)}</b></div>`).join('')}</div></article>
-      <article class="card card-pad"><div class="card-head"><h2>Каналы продаж</h2></div><div class="list"><div class="task"><span class="badge blue">A</span><div><div class="item-title">Авито</div><div class="item-meta">48% обращений</div></div><b>9 продаж</b></div><div class="task"><span class="badge blue">VK</span><div><div class="item-title">ВКонтакте</div><div class="item-meta">31% обращений</div></div><b>5 продаж</b></div><div class="task"><span class="badge blue">TG</span><div><div class="item-title">Telegram</div><div class="item-meta">12% обращений</div></div><b>2 продажи</b></div></div></article>
+      <article class="card card-pad"><div class="card-head"><h2>Динамика</h2><small>Выручка / прибыль</small></div><div class="chart">${months.map(m => `<div class="bar-wrap"><div class="bar" style="height:${(m.revenue||0)/max*100}%"></div><div class="bar profit" style="height:${(m.profit||0)/max*100}%"></div><span class="bar-label">${m.m}</span></div>`).join('')}</div><div class="legend"><span><i></i>Выручка</span><span><i class="sand"></i>Прибыль</span></div></article>
+      <article class="card card-pad"><div class="card-head"><h2>Что приносит деньги</h2><small>по проектам</small></div><div class="list">${state.projects.length ? state.projects.map((p,i)=>`<div class="task"><div class="thumb">${pattern(p.pattern)}</div><div><div class="item-title">${p.name}</div><div class="item-meta">Плановая цена</div>${progress(Math.max(0,80-i*12))}</div><b>${rub(p.price)}</b></div>`).join('') : '<div class="empty"><strong>Пока нет данных</strong>Аналитика появится после первых проектов и продаж.</div>'}</div></article>
+      <article class="card card-pad"><div class="card-head"><h2>Залежавшиеся изделия</h2><small>нужны действия</small></div><div class="list">${state.products.length ? state.products.map(p=>`<div class="task"><span class="badge ${p.days>14?'danger':'warn'}">${p.days}</span><div><div class="item-title">${p.name}</div><div class="item-meta">дней без продажи</div></div><b>${rub(p.retail)}</b></div>`).join('') : '<div class="empty"><strong>Готовых изделий нет</strong>Залежавшихся остатков тоже нет.</div>'}</div></article>
+      <article class="card card-pad"><div class="card-head"><h2>Каналы продаж</h2></div><div class="empty"><strong>Продаж пока нет</strong>После первых заказов здесь появится статистика по площадкам.</div></article>
     </section>`;
 }
-
 function renderFamily() {
   const shipment = state.shipments[0];
   if (!shipment) return `${viewHeader('Семейный режим', 'Простой экран для упаковки и отправки.', '')}<article class="card empty"><strong>Нет заказов к отправке</strong>Оплаченные заказы появятся здесь автоматически.</article>`;
@@ -348,7 +360,7 @@ function renderFamily() {
 }
 
 function renderMore() {
-  return `${viewHeader('Ещё', 'Все дополнительные разделы VORS Studio.', '')}<div class="mobile-more"><button class="nav-item" data-go="orders"><span>▣</span><b>Клиенты и заказы</b></button><button class="nav-item" data-go="products"><span>◇</span><b>Готовые изделия</b></button><button class="nav-item" data-go="finance"><span>▥</span><b>Финансы и аналитика</b></button><button class="nav-item" data-go="family"><span>♧</span><b>Семейный режим</b></button><button class="nav-item" data-action="role"><span>👤</span><b>Сменить роль</b></button></div>`;
+  return `${viewHeader('Ещё', 'Все дополнительные разделы VORS Studio.', '')}<div class="mobile-more"><button class="nav-item" data-go="orders"><span>▣</span><b>Клиенты и заказы</b></button><button class="nav-item" data-go="products"><span>◇</span><b>Готовые изделия</b></button><button class="nav-item" data-go="finance"><span>▥</span><b>Финансы и аналитика</b></button><button class="nav-item" data-go="family"><span>♧</span><b>Семейный режим</b></button><button class="nav-item" data-action="role"><span>👤</span><b>Сменить роль</b></button><button class="nav-item danger-action" data-action="clear-data"><span>⌫</span><b>Очистить все данные</b></button></div>`;
 }
 
 function bindViewEvents() {
@@ -392,7 +404,7 @@ function handleAction(action, id) {
     'next-stage': () => nextStage(id),
     'production-note': () => editProductionNote(id),
     'client-status': () => openClientStatus(id),
-    'client-status-by-rug': () => { const p = state.productions.find(x => x.id === id); const o = state.orders.find(x => x.project === p?.name); openClientStatus(o?.id || state.orders[0].id); },
+    'client-status-by-rug': () => { const p = state.productions.find(x => x.id === id); const o = state.orders.find(x => x.project === p?.name); if (o) openClientStatus(o.id); else toast('К этому ковру не привязан заказ'); },
     'order-status': () => changeOrderStatus(id),
     'message-template': () => openMessageTemplate(id),
     'product-card': () => openProduct(id),
@@ -400,7 +412,8 @@ function handleAction(action, id) {
     'new-product': openNewProduct,
     'new-expense': openExpense,
     'ship-order': () => shipOrder(id),
-    'role': openRoleModal
+    'role': openRoleModal,
+    'clear-data': clearAllData
   };
   actions[action]?.();
 }
@@ -526,10 +539,18 @@ function openExpense(){openModal('Новый расход',`<form id="expenseFor
 function shipOrder(id){const s=state.shipments.find(x=>x.orderId===id);if(!s)return;openModal('Подтвердить отправку',`<div class="field"><label>Трек-номер</label><input id="tracking" placeholder="Введите номер отправления"></div>`,`<button class="primary-btn" data-save>Подтвердить</button>`);modalRoot.querySelector('[data-save]').onclick=()=>{s.tracking=document.getElementById('tracking').value;s.status='Отправлен';const o=state.orders.find(x=>x.id===id);if(o)o.status='Отправлен';state.shipments=state.shipments.filter(x=>x.orderId!==id);markSaving();closeModal();render();toast('Заказ отмечен отправленным');};}
 function openRoleModal(){const roles=[['owner','Владелец','Полный доступ'],['manager','Менеджер','Клиенты, заказы, публикации'],['family','Семейный режим','Только упаковка и отправка']];openModal('Режим работы',`<div class="list">${roles.map(([key,name,desc])=>`<button class="item-row" style="width:100%;text-align:left" data-role="${key}"><span style="font-size:25px">${key==='owner'?'👤':key==='manager'?'💬':'📦'}</span><div><div class="item-title">${name}</div><div class="item-meta">${desc}</div></div>${state.role===key?'<span class="badge success">Выбран</span>':'<span>→</span>'}</button>`).join('')}</div>`);modalRoot.querySelectorAll('[data-role]').forEach(btn=>btn.onclick=()=>{state.role=btn.dataset.role;state.view=state.role==='family'?'family':'today';markSaving();closeModal();render();toast('Режим изменён');});}
 
+function clearAllData() {
+  if (!confirm('Удалить все проекты, материалы, заказы, клиентов, изделия и финансовые данные на этом устройстве?')) return;
+  state = clone(EMPTY_STATE);
+  saveState();
+  render();
+  toast('Мастерская очищена');
+}
+
 function setupGlobalEvents() {
   document.querySelectorAll('.nav-item[data-view], .mobile-nav[data-view]').forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.view)));
   document.getElementById('roleButton').addEventListener('click',openRoleModal);
-  document.getElementById('resetDemo').addEventListener('click',()=>{if(confirm('Вернуть исходные демо-данные?')){state=clone(DEFAULT_STATE);saveState();render();toast('Демо-данные восстановлены');}});
+  document.getElementById('resetDemo').addEventListener('click', clearAllData);
   window.addEventListener('beforeunload',saveState);
   window.addEventListener('online',()=>toast('Соединение восстановлено'));
   window.addEventListener('offline',()=>toast('Офлайн-режим: данные сохраняются на устройстве'));
