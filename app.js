@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'vors-studio-0.1.1';
-const APP_VERSION = '0.6.0';
+const APP_VERSION = '0.7.0';
 const CATALOG_CHECKED_AT = '05.08.2026';
 const CATALOG_SCOPE_NOTE = 'Варианты, опубликованные Куделем в таблицах товаров на дату проверки';
 
@@ -973,7 +973,45 @@ function reconcileLoadedState(merged) {
   merged.finance = normalizeFinance(merged.finance);
   merged.orders = (merged.orders || []).map(normalizeOrder);
   merged.products = (merged.products || []).map(normalizeProduct);
-  merged.productions = (merged.productions || []).map(item => ({ coverImage: '', materialCost: 0, extraCost: 0, completedAt: null, isTest: false, handoffStatus: '', ...item, cost: Number(item.cost) || 0 }));
+  merged.productions = (merged.productions || []).map(item => {
+    const materialUsage = Array.isArray(item.materialUsage) ? item.materialUsage.map(usage => ({
+      id: usage.id || `USE-${Date.now()}-${Math.random().toString(16).slice(2)}`,
+      materialId: usage.materialId || '', catalogId: usage.catalogId || '', materialName: usage.materialName || 'Материал',
+      type: usage.type || 'Материал', unit: usage.unit || 'шт', quantity: Number(usage.quantity) || 0,
+      unitCost: Number(usage.unitCost) || 0, cost: Number(usage.cost) || 0, stage: usage.stage || 'Общее',
+      date: usage.date || todayISO(), note: usage.note || ''
+    })) : [];
+    const usageCost = materialUsage.reduce((sum, usage) => sum + (Number(usage.cost) || 0), 0);
+    const materialCost = Math.max(Number(item.materialCost) || 0, usageCost);
+    const existingCost = Number(item.cost) || 0;
+    const extraCost = Math.max(Number(item.extraCost) || 0, existingCost - materialCost, 0);
+    return { coverImage: '', completedAt: null, isTest: false, handoffStatus: '', ...item, materialUsage, materialCost, extraCost, cost: materialCost + extraCost };
+  });
+
+  // Переносим старые складские списания, которые уже были связаны с производством,
+  // в новый журнал материалов конкретного ковра.
+  merged.productions.forEach(production => {
+    if (production.materialUsage.length) return;
+    const restored = [];
+    (merged.materials || []).forEach(material => (material.movements || []).forEach(move => {
+      if (move.productionId !== production.id || Number(move.delta) >= 0) return;
+      const quantity = Math.abs(Number(move.delta) || 0);
+      if (!quantity) return;
+      restored.push({
+        id: move.usageId || `USE-MIG-${move.id || Date.now()}-${material.id}`,
+        materialId: material.id, catalogId: material.catalogId || '', materialName: material.name || 'Материал',
+        type: material.type || 'Материал', unit: material.unit || 'шт', quantity,
+        unitCost: quantity ? (Number(move.cost) || quantity * (Number(material.pricePerUnit) || 0)) / quantity : 0,
+        cost: Number(move.cost) || quantity * (Number(material.pricePerUnit) || 0), stage: move.stage || 'Общее',
+        date: move.date || todayISO(), note: move.reason || ''
+      });
+    }));
+    if (restored.length) {
+      production.materialUsage = restored;
+      production.materialCost = restored.reduce((sum, usage) => sum + usage.cost, 0);
+      production.cost = production.materialCost + (Number(production.extraCost) || 0);
+    }
+  });
 
   merged.productions.filter(item => Number(item.progress) >= 100).forEach(production => {
     const project = merged.projects.find(entry => entry.id === production.projectId) || merged.projects.find(entry => entry.name === production.name);
@@ -1354,17 +1392,71 @@ function projectCard(p) {
     <div class="project-footer"><span class="price">${rub(p.price)}</span><span class="project-meta">План: ${p.planDays} дней</span></div></div>
   </article>`;
 }
+
+const PRODUCTION_MATERIAL_REQUIREMENTS = {
+  'Набивка': [
+    { label: 'Пряжа', types: ['Пряжа'] },
+    { label: 'Тафтинговое полотно', types: ['Основа'] }
+  ],
+  'Проклейка': [{ label: 'Клей / латекс', types: ['Клей'] }],
+  'Подложка': [{ label: 'Финишная подложка', types: ['Подложка'] }],
+  'Упаковка': [{ label: 'Упаковка', types: ['Упаковка'] }]
+};
+
+function productionUsage(production) {
+  production.materialUsage = Array.isArray(production.materialUsage) ? production.materialUsage : [];
+  return production.materialUsage;
+}
+function recalcProductionCost(production) {
+  const materialCost = productionUsage(production).reduce((sum, usage) => sum + (Number(usage.cost) || 0), 0);
+  production.materialCost = materialCost;
+  production.extraCost = Number(production.extraCost) || 0;
+  production.cost = materialCost + production.extraCost;
+  const product = state.products.find(item => item.productionId === production.id || item.id === production.id || (production.projectId && item.projectId === production.projectId));
+  if (product) product.cost = production.cost;
+}
+function usageHasTypes(production, types = []) {
+  return productionUsage(production).some(usage => types.includes(usage.type) && Number(usage.quantity) > 0);
+}
+function missingMaterialsForStage(production, stageName) {
+  return (PRODUCTION_MATERIAL_REQUIREMENTS[stageName] || []).filter(requirement => !usageHasTypes(production, requirement.types));
+}
+function overallMaterialChecklist(production) {
+  const items = [
+    { label: 'Пряжа', types: ['Пряжа'], required: true },
+    { label: 'Тафтинговое полотно', types: ['Основа'], required: true },
+    { label: 'Клей / латекс', types: ['Клей'], required: true },
+    { label: 'Подложка', types: ['Подложка'], required: true },
+    { label: 'Кромка', types: ['Кромка'], required: false },
+    { label: 'Упаковка', types: ['Упаковка'], required: true }
+  ];
+  return items.map(item => ({ ...item, done: usageHasTypes(production, item.types) }));
+}
+function currentProductionStage(production) {
+  return production.stages?.find(stage => stage.status === 'active')?.name || (production.progress >= 100 ? 'Готово' : 'Общее');
+}
+function productionMaterialSummary(production) {
+  const usage = productionUsage(production);
+  const quantity = usage.length;
+  return `${quantity} ${quantity === 1 ? 'списание' : quantity < 5 ? 'списания' : 'списаний'} · ${rub(production.materialCost || 0)}`;
+}
+
 function renderProduction() {
   return `
     ${viewHeader('Производство', 'Каждый этап, время, расход и качество — под контролем.', `<button class="primary-btn" data-action="start-production">＋ Запустить ковёр</button>`)}
     <section class="production-list">
-      ${state.productions.length ? state.productions.map(p => `
+      ${state.productions.length ? state.productions.map(p => {
+        const checklist = overallMaterialChecklist(p);
+        const requiredReady = checklist.filter(item => item.required).every(item => item.done);
+        return `
         <article class="card production-card">
           <div class="production-card-head"><div class="thumb">${visualForProduction(p)}</div><div style="flex:1"><div class="project-top"><div><div class="project-name">${p.name}</div><div class="project-meta">${p.id}</div></div><div class="badge-group">${testBadge(p)}<span class="badge ${statusClass(p.progress >= 100 ? 'Готов' : 'В работе')}">${p.progress >= 100 ? 'Готов' : 'В работе'}</span></div></div><div style="margin-top:10px">${progress(p.progress)}</div></div><div class="item-side"><div class="timer" data-timer="${p.id}">${fmtTime(p.timerSeconds)}</div><div class="item-meta">активное время</div></div></div>
-          <div class="grid cols-3" style="margin-top:14px"><div class="detail-tile"><small>План</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Факт</small><b>${p.elapsedDays} дней</b></div><div class="detail-tile"><small>Себестоимость</small><b>${rub(p.cost)}</b></div></div>
+          <div class="grid cols-4 production-kpis" style="margin-top:14px"><div class="detail-tile"><small>План</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Факт</small><b>${p.elapsedDays} дней</b></div><div class="detail-tile"><small>Материалы</small><b>${rub(p.materialCost || 0)}</b><span>${productionUsage(p).length} поз.</span></div><div class="detail-tile"><small>Себестоимость</small><b>${rub(p.cost)}</b><span>${requiredReady ? 'Основное учтено' : 'Есть пропуски'}</span></div></div>
+          <div class="material-check-mini">${checklist.map(item => `<span class="material-check-chip ${item.done ? 'done' : item.required ? 'missing' : 'optional'}">${item.done ? '✓' : item.required ? '!' : '○'} ${item.label}</span>`).join('')}</div>
           <div class="stages">${p.stages.map((stage, i) => `<div class="stage ${stage.status}"><span class="stage-index">${stage.status === 'done' ? '✓' : i + 1}</span><b>${stage.name}</b><span class="badge ${stage.status === 'active' ? 'clay' : stage.status === 'done' ? 'success' : ''}">${stage.status === 'done' ? 'Готово' : stage.status === 'active' ? 'В процессе' : 'Ожидает'}</span></div>`).join('')}</div>
-          <div class="production-actions">${p.progress < 100 ? `<button class="primary-btn" data-action="timer" data-id="${p.id}">${p.timerRunning ? 'Пауза' : 'Старт таймера'}</button><button class="secondary-btn" data-action="next-stage" data-id="${p.id}">Завершить этап</button>` : `<button class="primary-btn" data-action="prepare-shipment" data-id="${p.id}">Передать на склад / к отправке</button>`}<button class="secondary-btn" data-action="production-note" data-id="${p.id}">Заметка</button><button class="secondary-btn" data-action="client-status-by-rug" data-id="${p.id}">Статус клиенту</button>${p.isTest ? `<button class="danger-btn" data-action="delete-test-project" data-id="${p.projectId}">Удалить тест целиком</button>` : ''}</div>
-        </article>`).join('') : '<article class="card empty"><strong>Производство пусто</strong>Сначала создайте проект, затем запустите его в работу.</article>'}
+          <div class="production-actions"><button class="secondary-btn" data-action="production-materials" data-id="${p.id}">Материалы · ${productionUsage(p).length}</button>${p.progress < 100 ? `<button class="primary-btn" data-action="timer" data-id="${p.id}">${p.timerRunning ? 'Пауза' : 'Старт таймера'}</button><button class="secondary-btn" data-action="next-stage" data-id="${p.id}">Завершить этап</button>` : `<button class="primary-btn" data-action="prepare-shipment" data-id="${p.id}">Передать на склад / к отправке</button>`}<button class="secondary-btn" data-action="production-note" data-id="${p.id}">Заметка</button><button class="secondary-btn" data-action="client-status-by-rug" data-id="${p.id}">Статус клиенту</button>${p.isTest ? `<button class="danger-btn" data-action="delete-test-project" data-id="${p.projectId}">Удалить тест целиком</button>` : ''}</div>
+        </article>`;
+      }).join('') : '<article class="card empty"><strong>Производство пусто</strong>Сначала создайте проект, затем запустите его в работу.</article>'}
     </section>`;
 }
 function renderMaterials() {
@@ -1615,6 +1707,7 @@ function handleAction(action, id) {
     'timer': () => toggleTimer(id),
     'next-stage': () => nextStage(id),
     'production-note': () => editProductionNote(id),
+    'production-materials': () => openProductionMaterials(id),
     'client-status': () => openClientStatus(id),
     'client-status-by-rug': () => { const p = state.productions.find(x => x.id === id); const o = state.orders.find(x => x.project === p?.name); if (o) openClientStatus(o.id); else toast('К этому ковру не привязан заказ'); },
     'order-status': () => changeOrderStatus(id),
@@ -1812,7 +1905,7 @@ function deleteTestChain(id, type = 'project') {
 function launchProject(projectId) {
   const project = state.projects.find(item => item.id === projectId); if (!project) return;
   if (state.productions.some(item => item.projectId === projectId)) return toast('Этот проект уже в производстве');
-  state.productions.unshift({ id:`RUG-2026-${String(49+state.productions.length).padStart(4,'0')}`, projectId:project.id, name:project.name, pattern:project.pattern, coverImage:project.coverImage || '', progress:5, planDays:project.planDays, elapsedDays:0, cost:0, timerSeconds:0, timerRunning:false, stages:['Эскиз','Перенос','Набивка','Проклейка','Сушка','Подложка','Стрижка','Контроль качества','Упаковка'].map((name,index)=>({name,status:index===0?'active':'wait'})), notes:'', photos:0, isTest:Boolean(project.isTest), handoffStatus:'' });
+  state.productions.unshift({ id:`RUG-2026-${String(49+state.productions.length).padStart(4,'0')}`, projectId:project.id, name:project.name, pattern:project.pattern, coverImage:project.coverImage || '', progress:5, planDays:project.planDays, elapsedDays:0, cost:0, materialCost:0, extraCost:0, materialUsage:[], timerSeconds:0, timerRunning:false, stages:['Эскиз','Перенос','Набивка','Проклейка','Сушка','Подложка','Стрижка','Контроль качества','Упаковка'].map((name,index)=>({name,status:index===0?'active':'wait'})), notes:'', photos:0, isTest:Boolean(project.isTest), handoffStatus:'' });
   project.status='В работе'; project.progress=5;
   state.orders.filter(order => order.projectId === project.id || order.project === project.name).forEach(order => { order.projectId = project.id; order.coverImage = project.coverImage || order.coverImage || ''; order.pattern = project.pattern || order.pattern; order.status = 'В работе'; order.progress = 5; order.isTest = Boolean(project.isTest || order.isTest); });
   markSaving(); state.view='production'; render(); toast('Проект запущен в производство');
@@ -1827,10 +1920,14 @@ function toggleTimer(id) {
   state.productions.forEach(x=>{ if(x.id!==id) x.timerRunning=false; });
   p.timerRunning=!p.timerRunning; markSaving(); render();
 }
-function nextStage(id) {
+function nextStage(id, skipMaterialCheck = false) {
   const production = state.productions.find(item => item.id === id); if (!production) return;
   const active = production.stages.findIndex(stage => stage.status === 'active');
   if (active < 0) return toast('Все этапы уже завершены');
+  const stageName = production.stages[active].name;
+  const missing = missingMaterialsForStage(production, stageName);
+  if (!skipMaterialCheck && missing.length) return openStageMaterialCheck(production, stageName, missing);
+
   production.stages[active].status = 'done';
   if (active + 1 < production.stages.length) production.stages[active + 1].status = 'active';
   production.progress = Math.round(((active + 1) / production.stages.length) * 100);
@@ -1839,7 +1936,7 @@ function nextStage(id) {
   state.orders.filter(order => order.projectId === production.projectId || order.project === production.name).forEach(order => { order.projectId = production.projectId; order.coverImage = production.coverImage || project?.coverImage || order.coverImage || ''; order.progress = production.progress; order.status = production.progress >= 100 ? 'Готов' : 'В работе'; order.isTest = Boolean(order.isTest || production.isTest || project?.isTest); });
   if (active + 1 === production.stages.length) {
     production.progress = 100; production.timerRunning = false;
-    if (project) { project.progress = 100; project.status = 'Готов'; }
+    recalcProductionCost(production);
     if (!state.products.some(item => item.id === production.id)) {
       const linkedOrder = state.orders.find(order => order.projectId === production.projectId || order.project === production.name);
       state.products.unshift(normalizeProduct({ id:production.id, productionId:production.id, projectId:production.projectId, orderId:linkedOrder?.id || '', name:production.name, pattern:production.pattern, coverImage:production.coverImage || project?.coverImage || '', size:project?.size || linkedOrder?.size || '', composition:project?.material || linkedOrder?.material || '', base:'Тафтинговая ткань', pile:'12 мм', care:'Сухая чистка', retail:project?.price || linkedOrder?.amount || 0, minimum:Math.round((project?.price || linkedOrder?.amount || 0) * .78), location:'Не назначено', status:'Готов к передаче', inventoryStatus:'stock', cost:Number(production.cost) || 0, channels:[], days:0, createdAt:todayISO(), isTest:Boolean(production.isTest || project?.isTest || linkedOrder?.isTest) }));
@@ -1848,6 +1945,15 @@ function nextStage(id) {
   }
   markSaving(); render(); toast(active + 1 === production.stages.length ? 'Ковёр готов. Теперь передайте его на склад или к отправке' : 'Этап завершён');
 }
+function openStageMaterialCheck(production, stageName, missing) {
+  const isFinal = stageName === 'Упаковка';
+  const checklist = isFinal ? overallMaterialChecklist(production) : (PRODUCTION_MATERIAL_REQUIREMENTS[stageName] || []).map(item => ({ ...item, done: usageHasTypes(production, item.types), required: true }));
+  openModal(isFinal ? 'Проверка материалов перед завершением' : `Материалы этапа «${stageName}»`, `<div class="material-stage-warning"><b>${isFinal ? 'Проверьте себестоимость ковра' : 'Не все материалы этапа учтены'}</b><p>${isFinal ? 'Ковёр можно завершить, но пропущенные материалы занизят себестоимость и завысят маржу.' : `Не учтено: ${missing.map(item => item.label).join(', ')}.`}</p></div><div class="material-check-list">${checklist.map(item => `<div class="material-check-row ${item.done ? 'done' : 'missing'}"><span>${item.done ? '✓' : '!'}</span><div><b>${item.label}</b><small>${item.done ? 'Списание есть' : item.required === false ? 'Необязательно' : 'Не учтено'}</small></div></div>`).join('')}</div>`, `<button class="secondary-btn" data-cancel>Вернуться</button><button class="secondary-btn" data-add-material>Списать материал</button><button class="primary-btn" data-finish>${isFinal ? 'Всё учтено · завершить' : 'Завершить без списания'}</button>`);
+  modalRoot.querySelector('[data-cancel]').onclick = closeModal;
+  modalRoot.querySelector('[data-add-material]').onclick = () => { closeModal(); openAddMaterialUsage(production.id, stageName); };
+  modalRoot.querySelector('[data-finish]').onclick = () => { closeModal(); nextStage(production.id, true); };
+}
+
 function editProductionNote(id) {
   const production=state.productions.find(item=>item.id===id); if(!production)return;
   openModal('Заметка по производству',`<div class="field"><label>Комментарий</label><textarea id="prodNote">${production.notes}</textarea></div>`,`<button class="primary-btn" data-save>Сохранить</button>`);
@@ -1941,6 +2047,131 @@ function startTimerLoop() {
   },1000);
 }
 function stopTimerLoop(){if(timerInterval){clearInterval(timerInterval);timerInterval=null;}}
+
+
+function materialGuidance(material) {
+  const unit = material.unit || 'шт';
+  if (unit === 'г' || unit === 'мл') return `Можно ввести расход напрямую или указать значение до и после работы — разница посчитается автоматически.`;
+  if (unit === 'м²') return 'Введите площадь напрямую либо ширину и длину отреза в сантиметрах.';
+  if (unit === 'м') return 'Укажите фактически использованную длину.';
+  return `Укажите фактическое количество в единицах «${unit}».`;
+}
+function recommendedTypesForStage(stageName) {
+  return (PRODUCTION_MATERIAL_REQUIREMENTS[stageName] || []).flatMap(item => item.types);
+}
+function openProductionMaterials(productionId) {
+  const production = state.productions.find(item => item.id === productionId); if (!production) return;
+  const usage = productionUsage(production);
+  const checklist = overallMaterialChecklist(production);
+  const grouped = usage.reduce((map, item) => { const key = item.stage || 'Общее'; (map[key] ||= []).push(item); return map; }, {});
+  const usageHtml = usage.length ? Object.entries(grouped).map(([stage, items]) => `<div class="usage-stage"><div class="card-head"><h3>${esc(stage)}</h3><small>${rub(items.reduce((sum, item) => sum + item.cost, 0))}</small></div><div class="usage-list">${items.map(item => `<div class="usage-row"><div><b>${esc(item.materialName)}</b><div class="item-meta">${num(item.quantity, 3)} ${item.unit} · ${num(item.unitCost, 2)} ₽/${item.unit}${item.note ? ` · ${esc(item.note)}` : ''}</div></div><div class="usage-row-side"><b>${rub(item.cost)}</b><button class="icon-mini danger-icon" data-remove-usage="${item.id}" aria-label="Отменить списание">×</button></div></div>`).join('')}</div></div>`).join('') : '<div class="empty"><strong>Материалы ещё не списывались</strong>Добавляйте расход по ходу работы: пряжа и клей — по весу, ткани — по площади, ленты — по метрам.</div>';
+  openModal(`Материалы · ${production.name}`, `<section class="production-material-summary"><div class="detail-grid"><div class="detail-tile"><small>Материальная себестоимость</small><b>${rub(production.materialCost || 0)}</b></div><div class="detail-tile"><small>Всего списаний</small><b>${usage.length}</b></div><div class="detail-tile"><small>Общая себестоимость</small><b>${rub(production.cost || 0)}</b></div></div><div class="material-check-list compact">${checklist.map(item => `<div class="material-check-row ${item.done ? 'done' : item.required ? 'missing' : 'optional'}"><span>${item.done ? '✓' : item.required ? '!' : '○'}</span><div><b>${item.label}</b><small>${item.done ? 'Учтено' : item.required ? 'Пока не учтено' : 'По необходимости'}</small></div></div>`).join('')}</div></section><section class="usage-sections">${usageHtml}</section>`, `<button class="secondary-btn" data-close2>Закрыть</button><button class="primary-btn" data-add-usage>＋ Списать материал</button>`);
+  modalRoot.querySelector('[data-close2]').onclick = closeModal;
+  modalRoot.querySelector('[data-add-usage]').onclick = () => { closeModal(); openAddMaterialUsage(production.id); };
+  modalRoot.querySelectorAll('[data-remove-usage]').forEach(button => button.onclick = () => removeMaterialUsage(production.id, button.dataset.removeUsage));
+}
+function openAddMaterialUsage(productionId, preferredStage = '') {
+  const production = state.productions.find(item => item.id === productionId); if (!production) return;
+  const stageName = preferredStage || currentProductionStage(production);
+  const preferredTypes = recommendedTypesForStage(stageName);
+  const available = state.materials.filter(material => Number(material.stock) > 0).sort((a, b) => {
+    const ar = preferredTypes.includes(a.type) ? 0 : 1;
+    const br = preferredTypes.includes(b.type) ? 0 : 1;
+    return ar - br || materialNameForStock(a).localeCompare(materialNameForStock(b), 'ru');
+  });
+  if (!available.length) return toast('На складе нет материалов с положительным остатком');
+  const stages = [...new Set(['Общее', ...(production.stages || []).map(stage => stage.name)])];
+  openModal('Списать материал на ковёр', `<form id="usageForm" class="form-grid">
+    <div class="field full"><label>Материал со склада</label><select name="materialId" id="usageMaterialSelect">${available.map(material => `<option value="${material.id}" ${preferredTypes.includes(material.type) ? 'data-recommended="1"' : ''}>${esc(materialNameForStock(material))} · остаток ${num(material.stock, 3)} ${material.unit}</option>`).join('')}</select></div>
+    <div class="field"><label>Этап</label><select name="stage">${stages.map(stage => `<option ${stage === stageName ? 'selected' : ''}>${stage}</option>`).join('')}</select></div>
+    <div class="field"><label>Дата</label><input name="date" type="date" value="${todayISO()}"></div>
+    <div class="field full" id="usageMaterialPreview"></div>
+    <div class="field full" id="usageMeasurementFields"></div>
+    <div class="field full"><label>Комментарий</label><input name="note" placeholder="Например: вес банки до/после, запас на обрезку…"></div>
+  </form>`, `<button class="secondary-btn" data-cancel>Отмена</button><button class="primary-btn" data-save>Списать в себестоимость</button>`);
+  const select = document.getElementById('usageMaterialSelect');
+  const preview = document.getElementById('usageMaterialPreview');
+  const fields = document.getElementById('usageMeasurementFields');
+  const renderMeasurement = () => {
+    const material = state.materials.find(item => item.id === select.value);
+    if (!material) return;
+    const unit = material.unit || 'шт';
+    preview.innerHTML = `<div class="catalog-preview-card"><div class="material-thumb" style="--swatch:${material.swatch || '#e5d8c3'}"></div><div><b>${esc(materialNameForStock(material))}</b><div class="item-meta">На складе: ${num(material.stock, 3)} ${unit} · средняя цена ${num(material.pricePerUnit || 0, 2)} ₽/${unit}</div><small>${esc(materialGuidance(material))}</small></div></div>`;
+    if (unit === 'г' || unit === 'мл') {
+      fields.innerHTML = `<div class="measurement-grid"><div class="field"><label>До работы, ${unit}</label><input name="before" type="number" min="0" step="0.01" placeholder="Необязательно"></div><div class="field"><label>После работы, ${unit}</label><input name="after" type="number" min="0" step="0.01" placeholder="Необязательно"></div><div class="field"><label>Расход, ${unit}</label><input name="quantity" type="number" min="0.01" step="0.01" required placeholder="Можно ввести сразу"></div></div>`;
+    } else if (unit === 'м²') {
+      fields.innerHTML = `<div class="measurement-grid"><div class="field"><label>Ширина отреза, см</label><input name="widthCm" type="number" min="0" step="0.1" placeholder="Например, 80"></div><div class="field"><label>Длина отреза, см</label><input name="lengthCm" type="number" min="0" step="0.1" placeholder="Например, 100"></div><div class="field"><label>Площадь, м²</label><input name="quantity" type="number" min="0.001" step="0.001" required placeholder="0,8"></div></div>`;
+    } else {
+      fields.innerHTML = `<div class="field"><label>Количество, ${unit}</label><input name="quantity" type="number" min="0.01" step="0.01" required></div>`;
+    }
+    const form = document.getElementById('usageForm');
+    const quantityInput = form.elements.quantity;
+    const updateAuto = () => {
+      if (unit === 'г' || unit === 'мл') {
+        const before = Number(form.elements.before?.value) || 0;
+        const after = Number(form.elements.after?.value) || 0;
+        if (before > 0 && before >= after) quantityInput.value = Math.round((before - after) * 1000) / 1000 || '';
+      } else if (unit === 'м²') {
+        const width = Number(form.elements.widthCm?.value) || 0;
+        const length = Number(form.elements.lengthCm?.value) || 0;
+        if (width > 0 && length > 0) quantityInput.value = Math.round((width / 100) * (length / 100) * 1000) / 1000;
+      }
+    };
+    form.elements.before?.addEventListener('input', updateAuto);
+    form.elements.after?.addEventListener('input', updateAuto);
+    form.elements.widthCm?.addEventListener('input', updateAuto);
+    form.elements.lengthCm?.addEventListener('input', updateAuto);
+  };
+  select.addEventListener('change', renderMeasurement);
+  renderMeasurement();
+  modalRoot.querySelector('[data-cancel]').onclick = closeModal;
+  modalRoot.querySelector('[data-save]').onclick = () => {
+    const form = document.getElementById('usageForm');
+    const fd = new FormData(form);
+    const material = state.materials.find(item => item.id === fd.get('materialId'));
+    const quantity = Number(fd.get('quantity')) || 0;
+    if (!material || quantity <= 0) return toast('Укажите материал и количество');
+    if (quantity > Number(material.stock)) return toast(`Недостаточно на складе: доступно ${num(material.stock, 3)} ${material.unit}`);
+    addMaterialUsage(material, production, quantity, fd.get('stage') || 'Общее', fd.get('note') || '', fd.get('date') || todayISO());
+    markSaving(); closeModal(); render(); toast(`Списано ${num(quantity, 3)} ${material.unit} · ${rub(quantity * (Number(material.pricePerUnit) || 0))}`);
+  };
+}
+function materialNameForStock(material) {
+  const catalog = state.materialCatalog.find(item => item.id === material.catalogId);
+  return catalog ? materialName(catalog) : (material.name || 'Материал');
+}
+function addMaterialUsage(material, production, quantity, stage = 'Общее', note = '', date = todayISO()) {
+  const unitCost = Number(material.pricePerUnit) || 0;
+  const cost = quantity * unitCost;
+  const usageId = `USE-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  material.stock = Math.max(0, (Number(material.stock) || 0) - quantity);
+  consumeLots(material, quantity);
+  const usage = {
+    id: usageId, materialId: material.id, catalogId: material.catalogId || '', materialName: materialNameForStock(material),
+    type: material.type || 'Материал', unit: material.unit || 'шт', quantity, unitCost, cost, stage, date, note
+  };
+  productionUsage(production).unshift(usage);
+  material.movements = material.movements || [];
+  material.movements.unshift({ id: `MOV-${Date.now()}`, usageId, date, type: 'Расход на ковёр', delta: -quantity, reason: note || `${stage} · ${production.name}`, productionId: production.id, projectName: production.name, stage, cost });
+  recalcProductionCost(production);
+  return usage;
+}
+function removeMaterialUsage(productionId, usageId) {
+  const production = state.productions.find(item => item.id === productionId); if (!production) return;
+  const usage = productionUsage(production).find(item => item.id === usageId); if (!usage) return;
+  if (!confirm(`Отменить списание «${usage.materialName}» и вернуть ${num(usage.quantity, 3)} ${usage.unit} на склад?`)) return;
+  const material = state.materials.find(item => item.id === usage.materialId);
+  if (material) {
+    material.stock = (Number(material.stock) || 0) + (Number(usage.quantity) || 0);
+    material.lots = material.lots || [];
+    material.lots.unshift({ id: `LOT-RETURN-${Date.now()}`, date: todayISO(), batch: 'Возврат списания', skeins: 0, initialWeight: usage.quantity, remainingWeight: usage.quantity, purchasePrice: 0, note: `Возврат с ковра «${production.name}»` });
+    material.movements = (material.movements || []).filter(move => move.usageId !== usageId);
+    material.movements.unshift({ id: `MOV-RETURN-${Date.now()}`, date: todayISO(), type: 'Возврат', delta: usage.quantity, reason: `Отмена списания · ${production.name}`, productionId: production.id, projectName: production.name, cost: -usage.cost });
+  }
+  production.materialUsage = productionUsage(production).filter(item => item.id !== usageId);
+  recalcProductionCost(production);
+  markSaving(); closeModal(); render(); toast('Списание отменено, материал возвращён на склад');
+}
 
 function openCatalogEditor(id = null) {
   const item = state.materialCatalog.find(entry => entry.id === id);
@@ -2108,15 +2339,21 @@ function openMaterialAdjustment(id) {
     }
     const productionId = fd.get('productionId') || '';
     const linkedProduction = state.productions.find(item => item.id === productionId);
-    const consumptionCost = delta < 0 ? Math.abs(delta) * (Number(material.pricePerUnit) || 0) : 0;
-    if (linkedProduction && consumptionCost > 0) {
-      linkedProduction.materialCost = (Number(linkedProduction.materialCost) || 0) + consumptionCost;
-      linkedProduction.cost = (Number(linkedProduction.cost) || 0) + consumptionCost;
-      const linkedProduct = state.products.find(item => item.productionId === linkedProduction.id || item.id === linkedProduction.id);
-      if (linkedProduct) linkedProduct.cost = linkedProduction.cost;
+    let consumptionCost = 0;
+    if (linkedProduction && delta < 0) {
+      // Остаток и партии уже уменьшены выше; здесь создаём только связанное списание и пересчитываем себестоимость.
+      const quantity = Math.abs(delta);
+      const unitCost = Number(material.pricePerUnit) || 0;
+      consumptionCost = quantity * unitCost;
+      const usageId = `USE-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+      productionUsage(linkedProduction).unshift({ id: usageId, materialId: material.id, catalogId: material.catalogId || '', materialName: materialNameForStock(material), type: material.type || 'Материал', unit: material.unit || 'шт', quantity, unitCost, cost: consumptionCost, stage: currentProductionStage(linkedProduction), date: todayISO(), note: fd.get('reason') || '' });
+      recalcProductionCost(linkedProduction);
+      material.movements = material.movements || [];
+      material.movements.unshift({ id: `MOV-${Date.now()}`, usageId, date: todayISO(), type: 'Расход на ковёр', delta, reason: fd.get('reason') || 'Без комментария', productionId, projectName: linkedProduction.name, stage: currentProductionStage(linkedProduction), cost: consumptionCost });
+    } else {
+      material.movements = material.movements || [];
+      material.movements.unshift({ id: `MOV-${Date.now()}`, date: todayISO(), type: delta > 0 ? 'Корректировка +' : 'Расход', delta, reason: fd.get('reason') || 'Без комментария', productionId: '', projectName: '', cost: 0 });
     }
-    material.movements = material.movements || [];
-    material.movements.unshift({ id: `MOV-${Date.now()}`, date: todayISO(), type: delta > 0 ? 'Корректировка +' : 'Расход', delta, reason: fd.get('reason') || 'Без комментария', productionId, projectName: linkedProduction?.name || '', cost: consumptionCost });
     markSaving(); closeModal(); render(); toast(linkedProduction && consumptionCost > 0 ? `Списано ${num(Math.abs(delta),2)} ${material.unit} · в себестоимость ${rub(consumptionCost)}` : 'Остаток обновлён');
   };
 }
