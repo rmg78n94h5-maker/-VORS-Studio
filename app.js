@@ -1,27 +1,847 @@
 const STORAGE_KEY = 'vors-studio-0.1.1';
+const APP_VERSION = '0.5.0';
+const CATALOG_CHECKED_AT = '05.08.2026';
+const CATALOG_SCOPE_NOTE = 'Варианты, опубликованные Куделем в таблицах товаров на дату проверки';
 
-const MATERIAL_CATALOG_SEED = [
-  { id: 'CAT-PEH-UDV-01', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '01', colorName: 'Белый', internalCode: 'PEH-UDV-01', supplier: 'Кудель', supplierSku: '87686', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#f3f0e7', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-02', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '02', colorName: 'Чёрный', internalCode: 'PEH-UDV-02', supplier: 'Кудель', supplierSku: '87687', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#202226', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-04', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '04', colorName: 'Тёмно-синий', internalCode: 'PEH-UDV-04', supplier: 'Кудель', supplierSku: '90239', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#1d2b49', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-06', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '06', colorName: 'Красный', internalCode: 'PEH-UDV-06', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#b52f35', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-08', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '08', colorName: 'Светло-серый', internalCode: 'PEH-UDV-08', supplier: 'Кудель', supplierSku: '277435', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#d4d3d0', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-22', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '22', colorName: 'Сирень', internalCode: 'PEH-UDV-22', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#a58aaa', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-45', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '45', colorName: 'Тёмная бирюза', internalCode: 'PEH-UDV-45', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#176c72', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-59', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '59', colorName: 'Мышонок', internalCode: 'PEH-UDV-59', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#a7a39a', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-97', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '97', colorName: 'Апельсин', internalCode: 'PEH-UDV-97', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#e87925', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-98', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '98', colorName: 'Лесной колокольчик', internalCode: 'PEH-UDV-98', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#5f79a7', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-99', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '99', colorName: 'Абрикос', internalCode: 'PEH-UDV-99', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#e9a46f', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-119', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '119', colorName: 'Горох', internalCode: 'PEH-UDV-119', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#9aae4a', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-165', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '165', colorName: 'Тёмно-бежевый', internalCode: 'PEH-UDV-165', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#9a765e', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-434', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '434', colorName: 'Зелёный', internalCode: 'PEH-UDV-434', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#387447', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-435', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '435', colorName: 'Антрацит', internalCode: 'PEH-UDV-435', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#44474b', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-480', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '480', colorName: 'Яркая зелень', internalCode: 'PEH-UDV-480', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#58a847', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-494', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '494', colorName: 'Светлый хаки', internalCode: 'PEH-UDV-494', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#9a9a70', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-573', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '573', colorName: 'Тёмный изумруд', internalCode: 'PEH-UDV-573', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#1d6656', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-1178', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '1178', colorName: 'Светлая морская волна', internalCode: 'PEH-UDV-1178', supplier: 'Кудель', supplierSku: '', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#79b4ae', availability: 'Не проверено', checkedAt: '03.08.2026' },
-  { id: 'CAT-PEH-UDV-1409', type: 'Пряжа', brand: 'Пехорка', line: 'Удачный выбор', colorCode: '1409', colorName: 'Красный терракот', internalCode: 'PEH-UDV-1409', supplier: 'Кудель', supplierSku: '277437', composition: '100% объёмный акрил', nominalWeight: 100, lengthM: 200, unit: 'г', lastSkeinPrice: 147, supplierUrl: 'https://kudel.ru/product/udachnyij-vyibor-pehorka/', swatch: '#a94e37', availability: 'Не проверено', checkedAt: '03.08.2026' }
+const PEHORKA_LINES = [
+  {
+    "key": "UDV",
+    "line": "Удачный выбор",
+    "composition": "100% объёмный акрил",
+    "nominalWeight": 100,
+    "lengthM": 200,
+    "price": 147,
+    "url": "https://kudel.ru/product/udachnyij-vyibor-pehorka/?page_type=skus",
+    "fitGroup": "Рекомендовано",
+    "strands": "2 нити",
+    "note": "Базовая рабочая линейка: хороший баланс толщины, цены и объёма.",
+    "productCode": "90234"
+  },
+  {
+    "key": "ACR",
+    "line": "Акрил",
+    "composition": "100% акрил",
+    "nominalWeight": 100,
+    "lengthM": 300,
+    "price": 117,
+    "url": "https://kudel.ru/product/akril-pehorka/?page_type=skus",
+    "fitGroup": "На тест",
+    "strands": "2–3 нити",
+    "note": "Тоньше базовой пряжи. Полезна ради дополнительных оттенков, но нужен пробник.",
+    "productCode": "28425"
+  },
+  {
+    "key": "NAR",
+    "line": "Народная",
+    "composition": "30% шерсть, 70% высокообъёмный акрил",
+    "nominalWeight": 100,
+    "lengthM": 220,
+    "price": 174,
+    "url": "https://kudel.ru/product/narodnaja-pehorka/?page_type=skus",
+    "fitGroup": "Рекомендовано",
+    "strands": "2 нити",
+    "note": "Универсальная полушерсть с рабочим метражом для напольных и интерьерных ковров.",
+    "productCode": "28506"
+  },
+  {
+    "key": "NOS",
+    "line": "Носочная",
+    "composition": "50% шерсть, 50% акрил",
+    "nominalWeight": 100,
+    "lengthM": 200,
+    "price": 158,
+    "url": "https://kudel.ru/product/nosochnaja-pehorka/?page_type=skus",
+    "fitGroup": "Рекомендовано",
+    "strands": "2 нити",
+    "note": "Плотная полушерсть с подходящей толщиной; название линейки не мешает использовать её в тафтинге.",
+    "productCode": "13230"
+  },
+  {
+    "key": "MER",
+    "line": "Мериносовая",
+    "composition": "50% мериносовая шерсть, 50% акрил",
+    "nominalWeight": 100,
+    "lengthM": 200,
+    "price": 207,
+    "url": "https://kudel.ru/product/merinosovaja-pehorka/?page_type=skus",
+    "fitGroup": "Premium",
+    "strands": "2 нити",
+    "note": "Более мягкий премиальный вариант для ковров с повышенными требованиями к тактильности.",
+    "productCode": "12620"
+  },
+  {
+    "key": "ZPR",
+    "line": "Зимняя премьера",
+    "composition": "50% мериносовая шерсть, 50% высокообъёмный акрил",
+    "nominalWeight": 100,
+    "lengthM": 150,
+    "price": 207,
+    "url": "https://kudel.ru/product/zimnjaja-prem-era-pehorka/?page_type=skus",
+    "fitGroup": "Рекомендовано",
+    "strands": "1–2 нити",
+    "note": "Толстая и объёмная пряжа. Сначала проверить свободное прохождение через пистолет.",
+    "productCode": "11779"
+  },
+  {
+    "key": "OVC",
+    "line": "Овечья",
+    "composition": "100% шерсть",
+    "nominalWeight": 100,
+    "lengthM": 200,
+    "price": 160,
+    "url": "https://kudel.ru/product/ovech-ja-pehorka/?page_type=skus",
+    "fitGroup": "Premium",
+    "strands": "2 нити",
+    "note": "Натуральная шерсть для прочных ковров. Обязателен тест на жёсткость, линьку и стрижку.",
+    "productCode": "202928"
+  },
+  {
+    "key": "SEK",
+    "line": "Секрет успеха",
+    "composition": "100% шерсть",
+    "nominalWeight": 100,
+    "lengthM": 250,
+    "price": 235,
+    "url": "https://kudel.ru/product/sekret-uspeha-pehorka/?page_type=skus",
+    "fitGroup": "Premium",
+    "strands": "2–3 нити",
+    "note": "Шерстяная линейка для премиальных изделий; метраж требует плотной подачи.",
+    "productCode": "13869"
+  },
+  {
+    "key": "DER",
+    "line": "Деревенская",
+    "composition": "100% полугрубая шерсть",
+    "nominalWeight": 100,
+    "lengthM": 250,
+    "price": 216,
+    "url": "https://kudel.ru/product/derevenskaja-pehorka/?page_type=skus",
+    "fitGroup": "На тест",
+    "strands": "2–3 нити",
+    "note": "Потенциально прочная, но полугрубая: проверить жёсткость поверхности и качество карвинга.",
+    "productCode": "11507"
+  },
+  {
+    "key": "PER",
+    "line": "Перспективная",
+    "composition": "50% мериносовая шерсть, 50% акрил",
+    "nominalWeight": 100,
+    "lengthM": 270,
+    "price": 207,
+    "url": "https://kudel.ru/product/perspektivnaja-pehorka/?page_type=skus",
+    "fitGroup": "На тест",
+    "strands": "2–3 нити",
+    "note": "Рабочий состав, но нить тоньше основной. Подходит после проверки плотности набивки.",
+    "productCode": "28454"
+  },
+  {
+    "key": "DZR",
+    "line": "Джинсовый ряд объёмный",
+    "composition": "50% шерсть, 50% акрил",
+    "nominalWeight": 100,
+    "lengthM": 250,
+    "price": 192,
+    "url": "https://kudel.ru/product/dzhinsovyij-rjad-ob_emnyij-pehorka/?page_type=skus",
+    "fitGroup": "На тест",
+    "strands": "2–3 нити",
+    "note": "Твидовые меланжи для фактурных и интерьерных коллекций, не для точной цветовой графики.",
+    "productCode": "137972"
+  },
+  {
+    "key": "TVD",
+    "line": "Твидовая",
+    "composition": "80% шерсть, 20% полиамид",
+    "nominalWeight": 50,
+    "lengthM": 100,
+    "price": 112,
+    "url": "https://kudel.ru/product/tvidovaja-pehorka/?page_type=skus",
+    "fitGroup": "На тест",
+    "strands": "2 нити",
+    "note": "Эквивалент 200 м на 100 г. Декоративные вкрапления дают фактуру, но требуют пробника.",
+    "productCode": "283820"
+  },
+  {
+    "key": "POP",
+    "line": "Популярная",
+    "composition": "50% импортная шерсть, 50% акрил",
+    "nominalWeight": 100,
+    "lengthM": 133,
+    "price": 192,
+    "url": "https://kudel.ru/product/populjarnaja-pehorka/?page_type=skus",
+    "fitGroup": "На тест",
+    "strands": "1 нить",
+    "note": "Очень толстая пряжа. Проверить отверстие иглы и работу ножниц пистолета.",
+    "productCode": "13477"
+  },
+  {
+    "key": "DNV",
+    "line": "Детская новинка",
+    "composition": "100% высокообъёмный акрил",
+    "nominalWeight": 50,
+    "lengthM": 200,
+    "price": 74,
+    "url": "https://kudel.ru/product/detskaja-novinka-pehorka/?page_type=skus",
+    "fitGroup": "На тест",
+    "strands": "3–4 нити",
+    "note": "Тонкая пряжа с полезной палитрой редких цветов. Использовать несколькими нитями.",
+    "productCode": "90219"
+  }
 ];
+
+const PEHORKA_VARIANTS = {
+  "UDV": [
+    [
+      "87686",
+      "01",
+      "БЕЛЫЙ",
+      "В наличии"
+    ],
+    [
+      "87687",
+      "02",
+      "ЧЕРНЫЙ",
+      "В наличии"
+    ],
+    [
+      "90239",
+      "04",
+      "Т.СИНИЙ",
+      "В наличии"
+    ],
+    [
+      "277433",
+      "05",
+      "ГОЛУБОЙ",
+      "В наличии"
+    ],
+    [
+      "277435",
+      "08",
+      "СВ.СЕРЫЙ",
+      "В наличии"
+    ],
+    [
+      "277437",
+      "1409",
+      "КРАСНЫЙ ТЕРРАКОТ",
+      "Ожидается"
+    ]
+  ],
+  "ACR": [
+    [
+      "28425",
+      "11",
+      "ЯР.РОЗОВЫЙ",
+      "Ожидается"
+    ]
+  ],
+  "NAR": [
+    [
+      "28506",
+      "01",
+      "БЕЛЫЙ",
+      "В наличии"
+    ],
+    [
+      "28527",
+      "02",
+      "ЧЕРНЫЙ",
+      "В наличии"
+    ],
+    [
+      "28518",
+      "04",
+      "Т.СИНИЙ",
+      "В наличии"
+    ],
+    [
+      "28523",
+      "08",
+      "СВ.СЕРЫЙ",
+      "В наличии"
+    ],
+    [
+      "28519",
+      "20",
+      "РОЗОВЫЙ",
+      "В наличии"
+    ],
+    [
+      "28526",
+      "17",
+      "ШОКОЛАД",
+      "Ожидается"
+    ],
+    [
+      "28522",
+      "42",
+      "СЛИВА",
+      "Ожидается"
+    ],
+    [
+      "28514",
+      "117",
+      "КИВИ",
+      "Ожидается"
+    ],
+    [
+      "28508",
+      "118",
+      "ПОДСОЛНУХ",
+      "Ожидается"
+    ],
+    [
+      "277457",
+      "793",
+      "ЯР.САЛАТ",
+      "Ожидается"
+    ]
+  ],
+  "NOS": [
+    [
+      "13230",
+      "14",
+      "МОРСКАЯ ВОЛНА",
+      "В наличии"
+    ],
+    [
+      "13235",
+      "22",
+      "СИРЕНЬ",
+      "В наличии"
+    ],
+    [
+      "19774",
+      "48",
+      "СЕРЫЙ",
+      "В наличии"
+    ],
+    [
+      "13250",
+      "96",
+      "СЕРЫЙ МЕЛАНЖ",
+      "В наличии"
+    ],
+    [
+      "13231",
+      "165",
+      "Т.БЕЖЕВЫЙ",
+      "В наличии"
+    ],
+    [
+      "13227",
+      "01",
+      "БЕЛЫЙ",
+      "Ожидается"
+    ],
+    [
+      "13228",
+      "02",
+      "ЧЕРНЫЙ",
+      "Ожидается"
+    ],
+    [
+      "87068",
+      "03",
+      "СВЕТЛОБЕЖЕВЫЙ",
+      "Ожидается"
+    ],
+    [
+      "13229",
+      "07",
+      "БОРДО",
+      "Ожидается"
+    ]
+  ],
+  "MER": [
+    [
+      "12620",
+      "01",
+      "БЕЛЫЙ",
+      "В наличии"
+    ],
+    [
+      "12621",
+      "02",
+      "ЧЕРНЫЙ",
+      "В наличии"
+    ],
+    [
+      "12622",
+      "04",
+      "Т.СИНИЙ",
+      "В наличии"
+    ],
+    [
+      "12624",
+      "06",
+      "КРАСНЫЙ",
+      "В наличии"
+    ],
+    [
+      "12625",
+      "07",
+      "БОРДО",
+      "В наличии"
+    ],
+    [
+      "12661",
+      "89",
+      "ФРЕЗ",
+      "Ожидается"
+    ],
+    [
+      "12652",
+      "393",
+      "СВ.МАРЕНГО",
+      "Ожидается"
+    ],
+    [
+      "277458",
+      "510",
+      "СВ.НАСТУРЦИЯ",
+      "Ожидается"
+    ]
+  ],
+  "ZPR": [
+    [
+      "11779",
+      "01",
+      "БЕЛЫЙ",
+      "В наличии"
+    ],
+    [
+      "11780",
+      "02",
+      "ЧЕРНЫЙ",
+      "В наличии"
+    ],
+    [
+      "28504",
+      "04",
+      "Т.СИНИЙ",
+      "В наличии"
+    ],
+    [
+      "110371",
+      "06",
+      "КРАСНЫЙ",
+      "В наличии"
+    ],
+    [
+      "110415",
+      "21",
+      "ПЫЛЬНЫЙ РОЗОВЫЙ",
+      "В наличии"
+    ],
+    [
+      "87913",
+      "11",
+      "ЯР.РОЗОВЫЙ",
+      "Ожидается"
+    ],
+    [
+      "110422",
+      "49",
+      "ФУКСИЯ",
+      "Ожидается"
+    ]
+  ],
+  "OVC": [
+    [
+      "202928",
+      "251",
+      "КОРИЧНЕВЫЙ",
+      "В наличии"
+    ],
+    [
+      "13267",
+      "371",
+      "НАТУРАЛЬНЫЙ СЕРЫЙ",
+      "В наличии"
+    ],
+    [
+      "13269",
+      "530",
+      "СВ.НАТУРАЛЬНЫЙ",
+      "В наличии"
+    ],
+    [
+      "13266",
+      "166",
+      "СУРОВЫЙ",
+      "Ожидается"
+    ]
+  ],
+  "SEK": [
+    [
+      "13869",
+      "01",
+      "БЕЛЫЙ",
+      "В наличии"
+    ],
+    [
+      "13871",
+      "04",
+      "Т.СИНИЙ",
+      "В наличии"
+    ],
+    [
+      "13872",
+      "05",
+      "ГОЛУБОЙ",
+      "В наличии"
+    ],
+    [
+      "28658",
+      "30",
+      "СВ.ТЕРРАКОТ",
+      "В наличии"
+    ],
+    [
+      "13891",
+      "62",
+      "КАШТАН",
+      "В наличии"
+    ],
+    [
+      "13870",
+      "02",
+      "ЧЕРНЫЙ",
+      "Ожидается"
+    ],
+    [
+      "13883",
+      "335",
+      "ИЗУМРУД",
+      "Ожидается"
+    ]
+  ],
+  "DER": [
+    [
+      "11507",
+      "01",
+      "БЕЛЫЙ",
+      "В наличии"
+    ],
+    [
+      "11508",
+      "02",
+      "ЧЕРНЫЙ",
+      "В наличии"
+    ],
+    [
+      "11510",
+      "07",
+      "БОРДО",
+      "В наличии"
+    ],
+    [
+      "11512",
+      "14",
+      "МОРСК.ВОЛНА",
+      "В наличии"
+    ],
+    [
+      "11513",
+      "17",
+      "ШОКОЛАД",
+      "В наличии"
+    ],
+    [
+      "11509",
+      "04",
+      "Т.СИНИЙ",
+      "Ожидается"
+    ],
+    [
+      "273057",
+      "10",
+      "ТАЙГА",
+      "Ожидается"
+    ]
+  ],
+  "PER": [
+    [
+      "28454",
+      "01",
+      "БЕЛЫЙ",
+      "В наличии"
+    ],
+    [
+      "28482",
+      "02",
+      "ЧЕРНЫЙ",
+      "В наличии"
+    ],
+    [
+      "28470",
+      "04",
+      "Т.СИНИЙ",
+      "В наличии"
+    ],
+    [
+      "28468",
+      "05",
+      "ГОЛУБОЙ",
+      "В наличии"
+    ],
+    [
+      "28460",
+      "06",
+      "КРАСНЫЙ",
+      "В наличии"
+    ],
+    [
+      "273094",
+      "03",
+      "СВ.БЕЖЕВЫЙ",
+      "Ожидается"
+    ],
+    [
+      "108005",
+      "11",
+      "ЯР.РОЗОВЫЙ",
+      "Ожидается"
+    ],
+    [
+      "28458",
+      "12",
+      "ЖЕЛТОК",
+      "Ожидается"
+    ],
+    [
+      "29173",
+      "14",
+      "МОРСКАЯ ВОЛНА",
+      "Ожидается"
+    ],
+    [
+      "81875",
+      "30",
+      "СВ.ТЕРРАКОТ",
+      "Ожидается"
+    ]
+  ],
+  "DZR": [
+    [
+      "137977",
+      "777",
+      "Т.ГОЛУБОЙ МЕЛАНЖ",
+      "В наличии"
+    ],
+    [
+      "140752",
+      "814M",
+      "СИНИЙ МЕЛАНЖ",
+      "В наличии"
+    ],
+    [
+      "140753",
+      "817M",
+      "СЕРЫЙ МЕЛАНЖ",
+      "В наличии"
+    ],
+    [
+      "140755",
+      "826M",
+      "СЕРО-КОРИЧНЕВЫЙ МЕЛАНЖ",
+      "В наличии"
+    ],
+    [
+      "140756",
+      "871M",
+      "МОРСКАЯ ВОЛНА",
+      "В наличии"
+    ]
+  ],
+  "TVD": [
+    [
+      "283825",
+      "273",
+      "ШТОРМ",
+      "В наличии"
+    ],
+    [
+      "283826",
+      "746",
+      "ЛАЗУРИТ",
+      "В наличии"
+    ],
+    [
+      "283827",
+      "887",
+      "ОРЕХ",
+      "В наличии"
+    ],
+    [
+      "283820",
+      "1597",
+      "САНГРИЯ",
+      "В наличии"
+    ],
+    [
+      "283821",
+      "1598",
+      "ПЕСТО",
+      "В наличии"
+    ]
+  ],
+  "POP": [
+    [
+      "13477",
+      "01",
+      "БЕЛЫЙ",
+      "В наличии"
+    ],
+    [
+      "13478",
+      "02",
+      "ЧЕРНЫЙ",
+      "В наличии"
+    ],
+    [
+      "13479",
+      "04",
+      "Т.СИНИЙ",
+      "В наличии"
+    ],
+    [
+      "13480",
+      "05",
+      "ГОЛУБОЙ",
+      "В наличии"
+    ],
+    [
+      "13481",
+      "06",
+      "КРАСНЫЙ",
+      "В наличии"
+    ],
+    [
+      "13486",
+      "13",
+      "Т.ОЛИВКОВЫЙ",
+      "Ожидается"
+    ],
+    [
+      "87721",
+      "35",
+      "МАРЕНГО",
+      "Ожидается"
+    ],
+    [
+      "13514",
+      "42",
+      "СЛИВА",
+      "Ожидается"
+    ],
+    [
+      "87720",
+      "335",
+      "ИЗУМРУД",
+      "Ожидается"
+    ],
+    [
+      "13519",
+      "520",
+      "ГОЛУБАЯ ПРОЛЕСКА",
+      "Ожидается"
+    ]
+  ],
+  "DNV": [
+    [
+      "11550",
+      "01",
+      "БЕЛЫЙ",
+      "В наличии"
+    ],
+    [
+      "11551",
+      "02",
+      "ЧЕРНЫЙ",
+      "В наличии"
+    ],
+    [
+      "11553",
+      "06",
+      "КРАСНЫЙ",
+      "В наличии"
+    ],
+    [
+      "11555",
+      "08",
+      "СВ.СЕРЫЙ",
+      "В наличии"
+    ],
+    [
+      "11556",
+      "11",
+      "ЯРКО РОЗОВЫЙ",
+      "В наличии"
+    ],
+    [
+      "90218",
+      "33",
+      "ЗОЛОТИСТАЯ ОЛИВА",
+      "Ожидается"
+    ],
+    [
+      "11589",
+      "88",
+      "КРАСНЫЙ МАК",
+      "Ожидается"
+    ],
+    [
+      "280360",
+      "123",
+      "ФЛАМИНГО",
+      "Ожидается"
+    ],
+    [
+      "273788",
+      "195",
+      "НЕЗАБУДКА",
+      "Ожидается"
+    ]
+  ]
+};
+
+function safeCatalogCode(value) {
+  return String(value || 'BASE').toUpperCase().replace(/[^0-9A-ZА-ЯЁ]+/g, '-').replace(/^-+|-+$/g, '') || 'BASE';
+}
+function swatchForColor(name = '') {
+  const value = String(name).toLowerCase();
+  const pairs = [
+    [['бел','суров','натурал'], '#eee9df'], [['черн'], '#222429'], [['антрацит','маренго'], '#50545a'],
+    [['св.сер','светло-сер','серый'], '#b8bab9'], [['т.син','синий','джинс'], '#273d63'], [['голуб','незабуд','лазур'], '#70a6c7'],
+    [['морск','бирюз'], '#2f8587'], [['красн','мак'], '#b63c3f'], [['бордо','сангр'], '#7d2e42'], [['розов','фрез','фламинго'], '#d58da5'],
+    [['фукс'], '#b83378'], [['террак','настур'], '#b96647'], [['желт','подсолн','золот'], '#d5ae3f'], [['олив','хаки','песто'], '#7a8150'],
+    [['зел','киви','салат','изумруд','тайга'], '#4f7c58'], [['сирен','слива'], '#7e6488'], [['беж','орех','каштан','шоколад','корич'], '#8b6b55'],
+    [['шторм'], '#66737d']
+  ];
+  for (const [tokens, color] of pairs) if (tokens.some(token => value.includes(token))) return color;
+  return '#b8a58f';
+}
+function buildMaterialCatalog() {
+  return PEHORKA_LINES.flatMap((line, lineIndex) => (PEHORKA_VARIANTS[line.key] || []).map((variant, colorIndex) => {
+    const [supplierSku, colorCode, colorName, availability] = variant;
+    const metersPer100g = line.nominalWeight ? Math.round(line.lengthM * 1000 / line.nominalWeight) / 10 : 0;
+    const pricePer100g = line.nominalWeight ? Math.round(line.price * 10000 / line.nominalWeight) / 100 : 0;
+    const stableCode = line.key === 'UDV' ? safeCatalogCode(colorCode) : safeCatalogCode(supplierSku || colorCode);
+    return {
+      id: `CAT-PEH-${line.key}-${stableCode}`, type: 'Пряжа', brand: 'Пехорка', line: line.line,
+      colorCode, colorName, internalCode: `PEH-${line.key}-${safeCatalogCode(colorCode)}`, supplier: 'Кудель', supplierSku,
+      composition: line.composition, nominalWeight: line.nominalWeight, lengthM: line.lengthM, metersPer100g, unit: 'г',
+      lastSkeinPrice: line.price, pricePer100g, pricePerKg: pricePer100g * 10, supplierUrl: line.url,
+      swatch: swatchForColor(colorName), availability, checkedAt: CATALOG_CHECKED_AT, catalogScope: CATALOG_SCOPE_NOTE,
+      fitGroup: line.fitGroup, strandRecommendation: line.strands, tuftingNote: line.note, productCode: line.productCode,
+      system: true, sortOrder: lineIndex * 1000 + colorIndex
+    };
+  }));
+}
+
+const MATERIAL_CATALOG_SEED = buildMaterialCatalog();
 
 const EMPTY_STATE = {
   role: 'owner',
@@ -50,14 +870,24 @@ const toastRoot = document.getElementById('toastRoot');
 
 function clone(value) { return JSON.parse(JSON.stringify(value)); }
 function mergeCatalog(savedCatalog = []) {
-  const seedIds = new Set(MATERIAL_CATALOG_SEED.map(item => item.id));
-  const map = new Map(MATERIAL_CATALOG_SEED.map(item => [item.id, clone(item)]));
+  const seedMap = new Map(MATERIAL_CATALOG_SEED.map(item => [item.id, clone(item)]));
+  const customItems = [];
   savedCatalog.forEach(item => {
-    const isOfficialUdachnyVybor = String(item.id || '').startsWith('CAT-PEH-UDV-');
-    if (isOfficialUdachnyVybor && !seedIds.has(item.id)) return;
-    map.set(item.id, { ...(map.get(item.id) || {}), ...item });
+    const id = String(item?.id || '');
+    if (seedMap.has(id)) {
+      const seed = seedMap.get(id);
+      seedMap.set(id, {
+        ...item,
+        ...seed,
+        tested: Boolean(item.tested),
+        testNotes: item.testNotes || '',
+        ourRating: item.ourRating ?? null
+      });
+      return;
+    }
+    if (!id.startsWith('CAT-PEH-')) customItems.push(item);
   });
-  return [...map.values()];
+  return [...seedMap.values(), ...customItems];
 }
 function normalizeMaterial(item) {
   return {
@@ -263,7 +1093,7 @@ function materialCatalogLabel(item) {
   return `${item.brand} · ${item.line} · ${item.colorCode} ${item.colorName}${supplierCode}`;
 }
 function materialSearchText(item) {
-  return [item.brand, item.line, item.colorCode, item.colorName, item.internalCode, item.supplier, item.supplierSku, item.composition].filter(Boolean).join(' ').toLowerCase();
+  return [item.brand, item.line, item.colorCode, item.colorName, item.internalCode, item.supplier, item.supplierSku, item.composition, item.fitGroup, item.strandRecommendation, item.availability].filter(Boolean).join(' ').toLowerCase();
 }
 function materialName(item) { return `${item.brand} «${item.line}» · ${item.colorCode} ${item.colorName}`; }
 function progress(value) { return `<div class="progress"><span style="width:${Math.max(0, Math.min(100, value))}%"></span></div>`; }
@@ -496,6 +1326,9 @@ function renderMaterials() {
   const total = state.materials.reduce((sum, m) => sum + m.stock * (m.pricePerUnit || 0), 0);
   const yarnWeight = state.materials.filter(m => m.type === 'Пряжа').reduce((sum, m) => sum + m.stock, 0);
   const supplierCount = new Set(state.materialCatalog.map(item => item.supplier).filter(Boolean)).size;
+  const lineCount = new Set(state.materialCatalog.filter(item => item.system).map(item => item.line)).size;
+  const variantCount = state.materialCatalog.filter(item => item.system).length;
+  const recommendedCount = state.materialCatalog.filter(item => item.fitGroup === 'Рекомендовано').length;
   const headerActions = mode === 'stock'
     ? `<button class="secondary-btn" data-material-mode="catalog">Справочник</button><button class="primary-btn" data-action="new-material">＋ Поступление</button>`
     : `<button class="secondary-btn" data-material-mode="stock">Мой склад</button><button class="primary-btn" data-action="new-catalog-item">＋ Позиция</button>`;
@@ -508,10 +1341,37 @@ function renderMaterials() {
     </section>
     <div class="toolbar"><div class="search"><input id="materialSearch" placeholder="Название, цвет, код или артикул Куделя" /></div><div class="chips" id="materialChips"><button class="chip active" data-filter="Все">Все</button>${[...new Set(state.materials.map(m => m.type))].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
     <article class="card card-pad"><div class="material-table" id="materialTable">${state.materials.length ? state.materials.map(materialRow).join('') : '<div class="empty"><strong>Склад пока пуст</strong>Откройте «Поступление», выберите готовую позицию из справочника и внесите фактический вес.</div>'}</div></article>` : `
-    <article class="card card-pad catalog-intro"><div><h2>Справочник материалов</h2><p>Позиции хранятся отдельно от остатков. Вы выбираете точную пряжу по бренду, линейке, цвету и коду Куделя, а затем добавляете реальные партии на склад.</p></div><div class="supplier-badge"><b>Кудель</b><span>основной поставщик</span></div></article>
-    <div class="toolbar"><div class="search"><input id="materialSearch" placeholder="Пехорка, Удачный выбор, 01, 87686…" /></div><div class="chips" id="materialChips"><button class="chip active" data-filter="Все">Все</button>${[...new Set(state.materialCatalog.map(m => m.type))].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
-    <article class="card card-pad"><div class="material-table" id="materialTable">${state.materialCatalog.length ? state.materialCatalog.map(catalogRow).join('') : '<div class="empty"><strong>Справочник пуст</strong>Добавьте первую позицию поставщика.</div>'}</div></article>`;
-  return `${viewHeader('Материалы и закупки', mode === 'stock' ? 'Фактические остатки, партии и движение по весу.' : 'Точная номенклатура производителя и поставщика.', headerActions)}${content}`;
+    <article class="card card-pad catalog-intro"><div><h2>Справочник пряжи для тафтинга</h2><p>Только отобранные линейки Пехорки из каталога Куделя. Пушистая, буклированная, бобинная и заведомо неудобная для пистолета пряжа сюда не включена.</p></div><div class="supplier-badge"><b>Кудель</b><span>проверено ${CATALOG_CHECKED_AT}</span></div></article>
+    <section class="kpi-grid catalog-kpis">
+      ${kpi('Линеек Пехорки', `${lineCount}`, 'Отобраны для тафтинга')}
+      ${kpi('Цветовых вариантов', `${variantCount}`, 'Артикулы и названия Куделя')}
+      ${kpi('Рекомендовано', `${recommendedCount} поз.`, 'Основные рабочие линейки')}
+      ${kpi('Источник', 'Кудель', `Снимок на ${CATALOG_CHECKED_AT}`)}
+    </section>
+    <div class="toolbar"><div class="search"><input id="materialSearch" placeholder="Пехорка, линейка, цвет, код или артикул…" /></div><div class="chips" id="materialChips"><button class="chip active" data-filter="Все">Все</button>${['Рекомендовано','Premium','На тест'].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
+    <div class="catalog-groups" id="materialTable">${renderCatalogGroups(state.materialCatalog)}</div>`;
+  return `${viewHeader('Материалы и закупки', mode === 'stock' ? 'Фактические остатки, партии и движение по весу.' : 'Рабочая библиотека пряжи от поставщика Кудель.', headerActions)}${content}`;
+}
+function renderCatalogGroups(items) {
+  const groups = new Map();
+  [...items].sort((a, b) => (a.sortOrder ?? 999999) - (b.sortOrder ?? 999999) || a.line.localeCompare(b.line, 'ru')).forEach(item => {
+    const key = `${item.brand}::${item.line}`;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(item);
+  });
+  return [...groups.values()].map(group => {
+    const sample = group[0];
+    const available = group.filter(item => item.availability === 'В наличии').length;
+    return `<section class="card catalog-line-group" data-catalog-group>
+      <header class="catalog-line-head">
+        <div><div class="catalog-line-title"><h3>${esc(sample.brand)} · ${esc(sample.line)}</h3><span class="badge ${sample.fitGroup === 'Рекомендовано' ? 'success' : sample.fitGroup === 'Premium' ? 'clay' : ''}">${esc(sample.fitGroup || 'Не оценено')}</span></div>
+        <div class="item-meta">${esc(sample.composition)} · ${num(sample.nominalWeight, 0)} г / ${num(sample.lengthM, 0)} м · ${num(sample.metersPer100g, 0)} м на 100 г</div>
+        <div class="catalog-line-note"><b>${esc(sample.strandRecommendation || 'Требуется тест')}</b><span>${esc(sample.tuftingNote || '')}</span></div></div>
+        <div class="catalog-line-side"><b>${group.length} цветов</b><small>${available} сейчас в наличии</small><a class="secondary-btn" href="${esc(sample.supplierUrl)}" target="_blank" rel="noopener">Кудель ↗</a></div>
+      </header>
+      <div class="material-table">${group.map(catalogRow).join('')}</div>
+    </section>`;
+  }).join('');
 }
 function materialRow(m) {
   const catalog = state.materialCatalog.find(item => item.id === m.catalogId);
@@ -531,10 +1391,11 @@ function materialRow(m) {
 }
 function catalogRow(item) {
   const inventory = state.materials.find(m => m.catalogId === item.id);
-  return `<div class="material-row catalog-row" data-catalog="${item.id}" data-type="${item.type}" data-name="${materialSearchText(item)}">
+  const availabilityClass = item.availability === 'В наличии' ? 'success' : '';
+  return `<div class="material-row catalog-row" data-catalog="${item.id}" data-type="${esc(item.fitGroup || item.type)}" data-name="${materialSearchText(item)}">
     <div class="material-thumb" style="--swatch:${item.swatch || '#e5d8c3'}"></div>
-    <div><div class="item-title">${materialName(item)}</div><div class="item-meta">${item.composition} · ${item.nominalWeight} г / ${item.lengthM} м</div><div class="code-line"><span>${item.internalCode}</span><span>${item.supplierSku ? `Кудель ${item.supplierSku}` : 'Артикул Куделя не проверен'}</span></div></div>
-    <div><div class="material-label">Цена мотка</div><div class="material-number">${item.lastSkeinPrice ? rub(item.lastSkeinPrice) : '—'}</div></div>
+    <div><div class="item-title">${item.colorCode} ${esc(item.colorName)}</div><div class="item-meta">${esc(item.composition)} · ${item.nominalWeight} г / ${item.lengthM} м · ${esc(item.strandRecommendation || '')}</div><div class="code-line"><span>${esc(item.internalCode)}</span><span>Кудель ${esc(item.supplierSku || '—')}</span><span class="availability-tag ${availabilityClass}">${esc(item.availability || 'Не проверено')}</span></div></div>
+    <div><div class="material-label">Цена мотка</div><div class="material-number">${item.lastSkeinPrice ? rub(item.lastSkeinPrice) : '—'}</div><div class="item-meta">${item.pricePer100g ? `${num(item.pricePer100g, 0)} ₽ / 100 г` : ''}</div></div>
     <div><div class="material-label">На складе</div><div class="material-number">${inventory ? `${num(inventory.stock,1)} г` : '0 г'}</div></div>
     <div class="row-actions"><button class="secondary-btn" data-action="catalog-receipt" data-id="${item.id}">Поступление</button><button class="icon-mini" data-action="edit-catalog-item" data-id="${item.id}" aria-label="Изменить">⋯</button></div>
   </div>`;
@@ -625,7 +1486,8 @@ function renderFamily() {
     }).join('')}</section>`;
 }
 function renderMore() {
-  return `${viewHeader('Ещё', 'Все дополнительные разделы VORS Studio.', '')}<div class="mobile-more"><button class="nav-item" data-go="orders"><span>▣</span><b>Клиенты и заказы</b></button><button class="nav-item" data-go="products"><span>◇</span><b>Готовые изделия</b></button><button class="nav-item" data-go="finance"><span>▥</span><b>Финансы и аналитика</b></button><button class="nav-item" data-go="family"><span>♧</span><b>Семейный режим</b></button><button class="nav-item" data-action="role"><span>👤</span><b>Сменить роль</b></button><button class="nav-item danger-action" data-action="clear-data"><span>⌫</span><b>Очистить все данные</b></button></div>`;
+  const lineCount = new Set(state.materialCatalog.filter(item => item.system).map(item => item.line)).size;
+  return `${viewHeader('Ещё', 'Все дополнительные разделы VORS Studio.', '')}<div class="mobile-more"><button class="nav-item" data-go="orders"><span>▣</span><b>Клиенты и заказы</b></button><button class="nav-item" data-go="products"><span>◇</span><b>Готовые изделия</b></button><button class="nav-item" data-go="finance"><span>▥</span><b>Финансы и аналитика</b></button><button class="nav-item" data-go="family"><span>♧</span><b>Семейный режим</b></button><button class="nav-item" data-action="role"><span>👤</span><b>Сменить роль</b></button><button class="nav-item danger-action" data-action="clear-data"><span>⌫</span><b>Очистить рабочие данные</b></button></div><article class="card card-pad app-version-card"><div><small>VORS Studio</small><b>Версия ${APP_VERSION}</b><span>Библиотека: ${lineCount} линеек · ${state.materialCatalog.filter(item => item.system).length} вариантов</span></div><div><small>Каталог Куделя</small><b>${CATALOG_CHECKED_AT}</b><span>Справочник сохраняется при очистке</span></div></article>`;
 }
 
 function bindViewEvents() {
@@ -646,10 +1508,16 @@ function bindViewEvents() {
 function bindSearch(inputId, itemSelector, chipsId) {
   const input = document.getElementById(inputId); const chips = document.getElementById(chipsId); if (!input) return;
   let filter = 'Все';
-  const apply = () => document.querySelectorAll(itemSelector).forEach(item => {
-    const hay = item.dataset.name || ''; const cat = item.dataset.category || item.dataset.type || '';
-    item.style.display = hay.includes(input.value.toLowerCase()) && (filter === 'Все' || cat === filter) ? '' : 'none';
-  });
+  const apply = () => {
+    document.querySelectorAll(itemSelector).forEach(item => {
+      const hay = item.dataset.name || ''; const cat = item.dataset.category || item.dataset.type || '';
+      item.style.display = hay.includes(input.value.toLowerCase()) && (filter === 'Все' || cat === filter) ? '' : 'none';
+    });
+    document.querySelectorAll('#materialTable [data-catalog-group]').forEach(group => {
+      const visible = [...group.querySelectorAll('[data-catalog]')].some(item => item.style.display !== 'none');
+      group.style.display = visible ? '' : 'none';
+    });
+  };
   input.addEventListener('input', apply);
   chips?.querySelectorAll('[data-filter]').forEach(btn => btn.addEventListener('click', () => { chips.querySelectorAll('.chip').forEach(c => c.classList.remove('active')); btn.classList.add('active'); filter = btn.dataset.filter; apply(); }));
 }
@@ -1022,6 +1890,10 @@ function openCatalogEditor(id = null) {
     <div class="field"><label>Вес мотка, г</label><input name="nominalWeight" type="number" min="0" step="0.1" value="${item?.nominalWeight || ''}"></div>
     <div class="field"><label>Метраж, м</label><input name="lengthM" type="number" min="0" step="0.1" value="${item?.lengthM || ''}"></div>
     <div class="field"><label>Последняя цена мотка</label><input name="lastSkeinPrice" type="number" min="0" step="0.01" value="${item?.lastSkeinPrice || ''}"></div>
+    <div class="field"><label>Статус для тафтинга</label><select name="fitGroup">${['Рекомендовано','Premium','На тест'].map(group => `<option ${item?.fitGroup === group ? 'selected' : ''}>${group}</option>`).join('')}</select></div>
+    <div class="field"><label>Рекомендуемая подача</label><input name="strandRecommendation" value="${esc(item?.strandRecommendation || '')}" placeholder="2 нити"></div>
+    <div class="field"><label>Наличие у поставщика</label><select name="availability">${['В наличии','Ожидается','Не проверено'].map(status => `<option ${item?.availability === status ? 'selected' : ''}>${status}</option>`).join('')}</select></div>
+    <div class="field full"><label>Комментарий для тафтинга</label><textarea name="tuftingNote" placeholder="Что проверить на пробнике">${esc(item?.tuftingNote || '')}</textarea></div>
     <div class="field"><label>Цвет образца</label><input name="swatch" type="color" value="${item?.swatch || '#d7d4cf'}"></div>
   </form>`, `<button class="secondary-btn" data-cancel>Отмена</button><button class="primary-btn" data-save>Сохранить</button>`);
   modalRoot.querySelector('[data-cancel]').onclick = closeModal;
@@ -1035,7 +1907,9 @@ function openCatalogEditor(id = null) {
       supplier: fd.get('supplier').trim() || 'Кудель', supplierSku: fd.get('supplierSku').trim(), supplierUrl: fd.get('supplierUrl').trim(),
       composition: fd.get('composition').trim(), nominalWeight: Number(fd.get('nominalWeight')) || 0,
       lengthM: Number(fd.get('lengthM')) || 0, unit: fd.get('unit') || (fd.get('type') === 'Пряжа' ? 'г' : 'шт'),
-      lastSkeinPrice: Number(fd.get('lastSkeinPrice')) || 0, swatch: fd.get('swatch'), checkedAt: new Date().toLocaleDateString('ru-RU')
+      lastSkeinPrice: Number(fd.get('lastSkeinPrice')) || 0, swatch: fd.get('swatch'), checkedAt: new Date().toLocaleDateString('ru-RU'),
+      fitGroup: fd.get('fitGroup') || 'На тест', strandRecommendation: fd.get('strandRecommendation').trim(),
+      availability: fd.get('availability') || 'Не проверено', tuftingNote: fd.get('tuftingNote').trim(), system: Boolean(item?.system)
     };
     if (item) Object.assign(item, values);
     else state.materialCatalog.unshift({ id: `CAT-CUSTOM-${Date.now()}`, ...values });
@@ -1103,7 +1977,7 @@ function openMaterialReceipt(catalogId = null) {
   };
 }
 function receiptPreview(item) {
-  return `<div class="catalog-preview-card"><div class="material-thumb" style="--swatch:${item.swatch || '#e5d8c3'}"></div><div><b>${materialName(item)}</b><div class="item-meta">${item.composition} · ${item.nominalWeight} г / ${item.lengthM} м</div><div class="code-line"><span>${item.internalCode}</span><span>Кудель ${item.supplierSku || '—'}</span></div></div></div>`;
+  return `<div class="catalog-preview-card"><div class="material-thumb" style="--swatch:${item.swatch || '#e5d8c3'}"></div><div><b>${materialName(item)}</b><div class="item-meta">${item.composition} · ${item.nominalWeight} г / ${item.lengthM} м · ${item.strandRecommendation || 'нужен тест'}</div><div class="code-line"><span>${item.internalCode}</span><span>Кудель ${item.supplierSku || '—'}</span><span>${item.fitGroup || 'Не оценено'}</span></div></div></div>`;
 }
 function consumeLots(material, amount) {
   let rest = amount;
@@ -1337,11 +2211,23 @@ function shipOrder(id) {
 function openRoleModal(){const roles=[['owner','Владелец','Полный доступ'],['manager','Менеджер','Клиенты, заказы, публикации'],['family','Семейный режим','Только упаковка и отправка']];openModal('Режим работы',`<div class="list">${roles.map(([key,name,desc])=>`<button class="item-row" style="width:100%;text-align:left" data-role="${key}"><span style="font-size:25px">${key==='owner'?'👤':key==='manager'?'💬':'📦'}</span><div><div class="item-title">${name}</div><div class="item-meta">${desc}</div></div>${state.role===key?'<span class="badge success">Выбран</span>':'<span>→</span>'}</button>`).join('')}</div>`);modalRoot.querySelectorAll('[data-role]').forEach(btn=>btn.onclick=()=>{state.role=btn.dataset.role;state.view=state.role==='family'?'family':'today';markSaving();closeModal();render();toast('Режим изменён');});}
 
 function clearAllData() {
-  if (!confirm('Удалить все проекты, материалы, заказы, клиентов, изделия и финансовые данные на этом устройстве?')) return;
-  state = clone(EMPTY_STATE);
-  saveState();
-  render();
-  toast('Мастерская очищена');
+  openModal('Очистить рабочие данные', `<div class="clear-warning"><b>Справочник материалов останется.</b><p>Будут удалены проекты, заказы, клиенты, производство, готовые ковры, оплаты, расходы, складские остатки, партии, списания, отгрузки, изображения и вся рассчитанная аналитика.</p></div><div class="detail-tile" style="margin-top:12px"><small>Для подтверждения введите</small><b>ОЧИСТИТЬ</b></div><div class="field" style="margin-top:14px"><label>Подтверждение</label><input id="clearConfirmInput" autocomplete="off" placeholder="ОЧИСТИТЬ"></div>`, `<button class="secondary-btn" data-cancel>Отмена</button><button class="danger-btn" data-confirm-clear disabled>Очистить рабочие данные</button>`);
+  const input = document.getElementById('clearConfirmInput');
+  const confirmButton = modalRoot.querySelector('[data-confirm-clear]');
+  modalRoot.querySelector('[data-cancel]').onclick = closeModal;
+  input.addEventListener('input', () => { confirmButton.disabled = input.value.trim() !== 'ОЧИСТИТЬ'; });
+  confirmButton.onclick = () => {
+    if (input.value.trim() !== 'ОЧИСТИТЬ') return;
+    const preservedCatalog = mergeCatalog(clone(state.materialCatalog || MATERIAL_CATALOG_SEED));
+    state = clone(EMPTY_STATE);
+    state.materialCatalog = preservedCatalog;
+    state.view = 'today';
+    state.materialView = 'stock';
+    saveState();
+    closeModal();
+    render();
+    toast('Рабочие данные удалены · справочник сохранён');
+  };
 }
 
 function setupGlobalEvents() {

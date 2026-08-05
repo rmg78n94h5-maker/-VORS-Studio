@@ -1,4 +1,4 @@
-const CACHE = 'vors-studio-v0.4.1';
+const CACHE = 'vors-studio-v0.5.0';
 const ASSETS = [
   './',
   './index.html',
