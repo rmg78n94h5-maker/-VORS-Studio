@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'vors-studio-0.1.1';
-const APP_VERSION = '0.5.0';
+const APP_VERSION = '0.6.0';
 const CATALOG_CHECKED_AT = '05.08.2026';
 const CATALOG_SCOPE_NOTE = 'Варианты, опубликованные Куделем в таблицах товаров на дату проверки';
 
@@ -807,6 +807,52 @@ const PEHORKA_VARIANTS = {
   ]
 };
 
+
+const CONSUMABLE_CATALOG_ITEMS = [
+  { key: 'BASE-CLOTH', type: 'Основа', group: 'Основы и подложки', name: 'Тафтинговое полотно (основное)', unit: 'м²', min: 3, description: 'Основная ткань, которая натягивается на раму и в которую набивается ворс.', note: 'Списывать по фактически использованной площади с запасом на натяжение.' },
+  { key: 'FINAL-BACKING', type: 'Подложка', group: 'Основы и подложки', name: 'Финишная подложка обычная', unit: 'м²', min: 3, description: 'Обычный задник, закрывающий клей и изнанку готового ковра.', note: 'Списывать по площади ковра с небольшим запасом на обрезку.' },
+  { key: 'ANTI-SLIP', type: 'Подложка', group: 'Основы и подложки', name: 'Подложка антискользящая (антислип)', unit: 'м²', min: 3, description: 'Финишный задник с противоскользящим покрытием для напольных ковров.', note: 'Использовать для изделий, которые должны меньше скользить по полу.' },
+  { key: 'FELT-BACKING', type: 'Подложка', group: 'Основы и подложки', name: 'Фетр / войлок для изнанки', unit: 'м²', min: 2, description: 'Плотный мягкий задник для декоративных изделий и панно.', note: 'Отдельный вариант финишной изнанки; не считать антислипом.' },
+
+  { key: 'RUG-LATEX', type: 'Клей', group: 'Клеи', name: 'Ковровый латекс для фиксации ворса', unit: 'г', min: 1000, description: 'Эластичный клей для закрепления ворса с изнаночной стороны.', note: 'Лучше учитывать по весу: взвесить тару до и после работы.' },
+  { key: 'BACKING-GLUE', type: 'Клей', group: 'Клеи', name: 'Эластичный клей для подложки', unit: 'г', min: 500, description: 'Клей для приклеивания обычной или антискользящей подложки.', note: 'Списывать отдельно от латекса, чтобы видеть реальную себестоимость отделки.' },
+  { key: 'HOT-GLUE', type: 'Клей', group: 'Клеи', name: 'Стержни термоклея', unit: 'шт', min: 20, description: 'Стержни для клеевого пистолета при обработке краёв и локальной фиксации.', note: 'Не использовать как основной клей на всю площадь ковра.' },
+
+  { key: 'TWILL-TAPE', type: 'Кромка', group: 'Обработка края', name: 'Киперная лента 30 мм', unit: 'м', min: 20, description: 'Хлопковая лента для аккуратного закрытия и укрепления края изнанки.', note: 'Списывать по фактическому периметру с запасом на стыки.' },
+  { key: 'EDGE-TAPE', type: 'Кромка', group: 'Обработка края', name: 'Окантовочная лента для ковров', unit: 'м', min: 20, description: 'Прочная лента для технической или декоративной обработки края.', note: 'Альтернатива киперной ленте; расход считается по периметру.' },
+  { key: 'EDGE-THREAD', type: 'Кромка', group: 'Обработка края', name: 'Прочная нить для обработки края', unit: 'м', min: 100, description: 'Нить для ручной прошивки, ремонта и дополнительного укрепления края.', note: 'Использовать только там, где край действительно прошивается.' },
+
+  { key: 'STAPLES', type: 'Производство', group: 'Производственные расходники', name: 'Скобы для степлера', unit: 'шт', min: 500, description: 'Скобы для временной или постоянной фиксации полотна и отделочных материалов.', note: 'Мелкий производственный расходник; можно списывать на проект или в общие расходы.' },
+  { key: 'TRIMMER-BLADES', type: 'Производство', group: 'Производственные расходники', name: 'Сменные лезвия для триммера', unit: 'шт', min: 3, description: 'Лезвия для выравнивания поверхности и карвинга.', note: 'При замене можно относить на конкретный проект либо на общепроизводственные расходы.' },
+  { key: 'KNIFE-BLADES', type: 'Производство', group: 'Производственные расходники', name: 'Лезвия канцелярского ножа', unit: 'шт', min: 10, description: 'Сменные лезвия для раскроя основы, подложки и упаковки.', note: 'Учитывать как мелкий производственный расходник.' },
+  { key: 'MACHINE-OIL', type: 'Производство', group: 'Производственные расходники', name: 'Масло для тафтингового пистолета и триммера', unit: 'мл', min: 100, description: 'Смазка для регулярного обслуживания рабочего оборудования.', note: 'Обычно относится к общепроизводственным расходам, а не к одному ковру.' },
+  { key: 'MARKER', type: 'Производство', group: 'Производственные расходники', name: 'Маркер / мел для разметки', unit: 'шт', min: 2, description: 'Расходник для переноса рисунка и технологических отметок.', note: 'Можно учитывать по штукам без попытки делить один маркер на каждый ковёр.' },
+  { key: 'GLOVES', type: 'Производство', group: 'Производственные расходники', name: 'Нитриловые перчатки', unit: 'пара', min: 20, description: 'Защита рук при работе с клеем, латексом и отделочными материалами.', note: 'Списывать по фактически использованным парам.' },
+
+  { key: 'KRAFT', type: 'Упаковка', group: 'Упаковка и отправка', name: 'Крафт-бумага упаковочная', unit: 'м²', min: 10, description: 'Наружная или промежуточная упаковка готового ковра.', note: 'Списывать по использованной площади.' },
+  { key: 'BUBBLE-WRAP', type: 'Упаковка', group: 'Упаковка и отправка', name: 'Пузырчатая плёнка', unit: 'м²', min: 10, description: 'Защитный слой для отправки и хранения готовых изделий.', note: 'Списывать по площади, а не по условным рулонам.' },
+  { key: 'STRETCH', type: 'Упаковка', group: 'Упаковка и отправка', name: 'Стрейч-плёнка', unit: 'м', min: 50, description: 'Фиксация свёрнутого ковра и защита упаковки.', note: 'Учитывать метрами; длину можно оценивать по расходу рулона.' },
+  { key: 'PACKING-TAPE', type: 'Упаковка', group: 'Упаковка и отправка', name: 'Скотч упаковочный', unit: 'м', min: 50, description: 'Закрытие коробок, тубусов и наружной упаковки.', note: 'Списывать метрами или периодически общей корректировкой.' },
+  { key: 'RUG-BAG', type: 'Упаковка', group: 'Упаковка и отправка', name: 'Защитный пакет / мешок для ковра', unit: 'шт', min: 5, description: 'Индивидуальный пакет или мешок для хранения и передачи ковра.', note: 'Одна упаковка обычно списывается на одно изделие.' },
+  { key: 'BOX-TUBE', type: 'Упаковка', group: 'Упаковка и отправка', name: 'Коробка / тубус для отправки', unit: 'шт', min: 5, description: 'Жёсткая транспортная упаковка подходящего размера.', note: 'Стоимость выбранной коробки или тубуса относить к заказу.' },
+  { key: 'BRAND-TAG', type: 'Упаковка', group: 'Упаковка и отправка', name: 'Бирка VORS Studio', unit: 'шт', min: 20, description: 'Фирменная бирка готового изделия.', note: 'Одна бирка на один ковёр, если не предусмотрено иное.' },
+  { key: 'CARE-CARD', type: 'Упаковка', group: 'Упаковка и отправка', name: 'Вкладыш с рекомендациями по уходу', unit: 'шт', min: 20, description: 'Печатная памятка для клиента.', note: 'Один вкладыш на отправление.' },
+  { key: 'ADDRESS-LABEL', type: 'Упаковка', group: 'Упаковка и отправка', name: 'Адресная этикетка / наклейка', unit: 'шт', min: 20, description: 'Этикетка для маркировки упаковки и отправления.', note: 'Обычно одна штука на отправление.' }
+];
+
+function buildConsumableCatalog() {
+  const swatches = { 'Основа': '#d9c7a7', 'Подложка': '#8b8e8a', 'Клей': '#d9b36c', 'Кромка': '#a46b50', 'Производство': '#65727d', 'Упаковка': '#9c8065' };
+  return CONSUMABLE_CATALOG_ITEMS.map((item, index) => ({
+    id: `CAT-CONS-${item.key}`, type: item.type, brand: '', line: item.group, colorCode: '', colorName: item.name,
+    name: item.name, internalCode: `VORS-${item.key}`, supplier: '', supplierSku: '', composition: item.description,
+    nominalWeight: 0, lengthM: 0, metersPer100g: 0, unit: item.unit, suggestedMin: item.min,
+    lastSkeinPrice: 0, pricePer100g: 0, pricePerKg: 0, supplierUrl: '', swatch: swatches[item.type] || '#b8a58f',
+    availability: 'Справочник', checkedAt: '', catalogScope: 'Системная библиотека расходников VORS Studio',
+    fitGroup: 'Расходник', strandRecommendation: `Учёт: ${item.unit}`, tuftingNote: item.note,
+    system: true, sortOrder: 100000 + index
+  }));
+}
+
 function safeCatalogCode(value) {
   return String(value || 'BASE').toUpperCase().replace(/[^0-9A-ZА-ЯЁ]+/g, '-').replace(/^-+|-+$/g, '') || 'BASE';
 }
@@ -841,7 +887,7 @@ function buildMaterialCatalog() {
   }));
 }
 
-const MATERIAL_CATALOG_SEED = buildMaterialCatalog();
+const MATERIAL_CATALOG_SEED = [...buildMaterialCatalog(), ...buildConsumableCatalog()];
 
 const EMPTY_STATE = {
   role: 'owner',
@@ -1089,13 +1135,14 @@ async function compressImage(file, maxSide = 1100, quality = 0.76) {
   return canvas.toDataURL('image/jpeg', quality);
 }
 function materialCatalogLabel(item) {
+  if (item.type !== 'Пряжа') return `${item.colorName || item.name || item.line} · ${item.type} · ${item.internalCode || ''}`;
   const supplierCode = item.supplierSku ? ` · Кудель ${item.supplierSku}` : '';
   return `${item.brand} · ${item.line} · ${item.colorCode} ${item.colorName}${supplierCode}`;
 }
 function materialSearchText(item) {
   return [item.brand, item.line, item.colorCode, item.colorName, item.internalCode, item.supplier, item.supplierSku, item.composition, item.fitGroup, item.strandRecommendation, item.availability].filter(Boolean).join(' ').toLowerCase();
 }
-function materialName(item) { return `${item.brand} «${item.line}» · ${item.colorCode} ${item.colorName}`; }
+function materialName(item) { return item.type === 'Пряжа' ? `${item.brand} «${item.line}» · ${item.colorCode} ${item.colorName}` : (item.colorName || item.name || item.line || 'Материал'); }
 function progress(value) { return `<div class="progress"><span style="width:${Math.max(0, Math.min(100, value))}%"></span></div>`; }
 function fmtTime(seconds) {
   const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
@@ -1131,7 +1178,7 @@ function transactionsLedger() {
   const entries = [];
   state.materials.forEach(material => (material.lots || []).forEach(lot => {
     const amount = Number(lot.purchasePrice) || 0;
-    if (amount > 0) entries.push({ id: `PUR-${material.id}-${lot.id}`, kind: 'expense', category: 'Материалы', amount, date: lot.date || todayISO(), title: material.name || 'Покупка материала', note: lot.batch || '', source: 'Склад' });
+    if (amount > 0) entries.push({ id: `PUR-${material.id}-${lot.id}`, kind: 'expense', category: material.type === 'Упаковка' ? 'Упаковка' : 'Материалы', amount, date: lot.date || todayISO(), title: material.name || 'Покупка материала', note: lot.batch || '', source: 'Склад' });
   }));
   (state.finance?.transactions || []).forEach(item => entries.push({ kind: 'expense', category: 'Прочее', date: todayISO(), ...item, amount: Number(item.amount) || 0 }));
   state.orders.forEach(order => (order.payments || []).forEach(payment => {
@@ -1325,49 +1372,58 @@ function renderMaterials() {
   const low = state.materials.filter(m => m.stock < m.min).length;
   const total = state.materials.reduce((sum, m) => sum + m.stock * (m.pricePerUnit || 0), 0);
   const yarnWeight = state.materials.filter(m => m.type === 'Пряжа').reduce((sum, m) => sum + m.stock, 0);
-  const supplierCount = new Set(state.materialCatalog.map(item => item.supplier).filter(Boolean)).size;
-  const lineCount = new Set(state.materialCatalog.filter(item => item.system).map(item => item.line)).size;
-  const variantCount = state.materialCatalog.filter(item => item.system).length;
-  const recommendedCount = state.materialCatalog.filter(item => item.fitGroup === 'Рекомендовано').length;
+  const yarnCatalog = state.materialCatalog.filter(item => item.type === 'Пряжа');
+  const consumableCatalog = state.materialCatalog.filter(item => item.type !== 'Пряжа');
+  const lineCount = new Set(yarnCatalog.filter(item => item.system).map(item => item.line)).size;
+  const variantCount = yarnCatalog.filter(item => item.system).length;
+  const consumableCount = consumableCatalog.filter(item => item.system).length;
   const headerActions = mode === 'stock'
-    ? `<button class="secondary-btn" data-material-mode="catalog">Справочник</button><button class="primary-btn" data-action="new-material">＋ Поступление</button>`
+    ? `<button class="secondary-btn" data-material-mode="catalog">Библиотека</button><button class="primary-btn" data-action="new-material">＋ Поступление</button>`
     : `<button class="secondary-btn" data-material-mode="stock">Мой склад</button><button class="primary-btn" data-action="new-catalog-item">＋ Позиция</button>`;
   const content = mode === 'stock' ? `
     <section class="kpi-grid">
       ${kpi('Стоимость запасов', rub(total), `${state.materials.length} складских позиций`)}
       ${kpi('Ниже минимума', `${low} поз.`, low ? 'Нужно пополнить запас' : 'Критичных остатков нет')}
-      ${kpi('Пряжа на складе', `${num(yarnWeight / 1000, 2)} кг`, 'Учёт ведётся по фактическому весу')}
-      ${kpi('Основной поставщик', 'Кудель', `${supplierCount || 1} поставщик в справочнике`)}
+      ${kpi('Пряжа на складе', `${num(yarnWeight / 1000, 2)} кг`, 'Пряжа учитывается по фактическому весу')}
+      ${kpi('Расходники на складе', `${state.materials.filter(m => m.type !== 'Пряжа').length} поз.`, 'Основа, клей, подложки, кромка и упаковка')}
     </section>
-    <div class="toolbar"><div class="search"><input id="materialSearch" placeholder="Название, цвет, код или артикул Куделя" /></div><div class="chips" id="materialChips"><button class="chip active" data-filter="Все">Все</button>${[...new Set(state.materials.map(m => m.type))].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
-    <article class="card card-pad"><div class="material-table" id="materialTable">${state.materials.length ? state.materials.map(materialRow).join('') : '<div class="empty"><strong>Склад пока пуст</strong>Откройте «Поступление», выберите готовую позицию из справочника и внесите фактический вес.</div>'}</div></article>` : `
-    <article class="card card-pad catalog-intro"><div><h2>Справочник пряжи для тафтинга</h2><p>Только отобранные линейки Пехорки из каталога Куделя. Пушистая, буклированная, бобинная и заведомо неудобная для пистолета пряжа сюда не включена.</p></div><div class="supplier-badge"><b>Кудель</b><span>проверено ${CATALOG_CHECKED_AT}</span></div></article>
+    <div class="toolbar"><div class="search"><input id="materialSearch" placeholder="Название, категория, цвет, код или артикул" /></div><div class="chips" id="materialChips"><button class="chip active" data-filter="Все">Все</button>${[...new Set(state.materials.map(m => m.type))].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
+    <article class="card card-pad"><div class="material-table" id="materialTable">${state.materials.length ? state.materials.map(materialRow).join('') : '<div class="empty"><strong>Склад пока пуст</strong>Откройте «Поступление», выберите позицию из библиотеки и внесите фактическое количество и стоимость покупки.</div>'}</div></article>` : `
+    <article class="card card-pad catalog-intro"><div><h2>Библиотека материалов VORS Studio</h2><p>Отобранная пряжа Пехорка с Куделя и системный набор расходников: основа, подложки, клеи, обработка края, производство и упаковка.</p></div><div class="supplier-badge"><b>${lineCount} линеек пряжи</b><span>${consumableCount} расходников</span></div></article>
     <section class="kpi-grid catalog-kpis">
       ${kpi('Линеек Пехорки', `${lineCount}`, 'Отобраны для тафтинга')}
-      ${kpi('Цветовых вариантов', `${variantCount}`, 'Артикулы и названия Куделя')}
-      ${kpi('Рекомендовано', `${recommendedCount} поз.`, 'Основные рабочие линейки')}
-      ${kpi('Источник', 'Кудель', `Снимок на ${CATALOG_CHECKED_AT}`)}
+      ${kpi('Цветов пряжи', `${variantCount}`, 'Артикулы и названия Куделя')}
+      ${kpi('Расходников', `${consumableCount}`, 'Обобщённые позиции без брендов')}
+      ${kpi('Всего в библиотеке', `${state.materialCatalog.filter(item => item.system).length}`, 'Сохраняется при очистке данных')}
     </section>
-    <div class="toolbar"><div class="search"><input id="materialSearch" placeholder="Пехорка, линейка, цвет, код или артикул…" /></div><div class="chips" id="materialChips"><button class="chip active" data-filter="Все">Все</button>${['Рекомендовано','Premium','На тест'].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
+    <div class="toolbar"><div class="search"><input id="materialSearch" placeholder="Пряжа, полотно, подложка, клей, лента, упаковка…" /></div><div class="chips" id="materialChips"><button class="chip active" data-filter="Все">Все</button>${['Пряжа','Основа','Подложка','Клей','Кромка','Производство','Упаковка'].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
     <div class="catalog-groups" id="materialTable">${renderCatalogGroups(state.materialCatalog)}</div>`;
-  return `${viewHeader('Материалы и закупки', mode === 'stock' ? 'Фактические остатки, партии и движение по весу.' : 'Рабочая библиотека пряжи от поставщика Кудель.', headerActions)}${content}`;
+  return `${viewHeader('Материалы и закупки', mode === 'stock' ? 'Фактические остатки, партии, закупки и списание в себестоимость ковров.' : 'Единая библиотека пряжи и всех основных расходников мастерской.', headerActions)}${content}`;
 }
 function renderCatalogGroups(items) {
   const groups = new Map();
   [...items].sort((a, b) => (a.sortOrder ?? 999999) - (b.sortOrder ?? 999999) || a.line.localeCompare(b.line, 'ru')).forEach(item => {
-    const key = `${item.brand}::${item.line}`;
+    const key = item.type === 'Пряжа' ? `${item.brand}::${item.line}` : `Расходники::${item.line}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key).push(item);
   });
   return [...groups.values()].map(group => {
     const sample = group[0];
+    const isYarn = sample.type === 'Пряжа';
     const available = group.filter(item => item.availability === 'В наличии').length;
+    const title = isYarn ? `${esc(sample.brand)} · ${esc(sample.line)}` : esc(sample.line);
+    const meta = isYarn
+      ? `${esc(sample.composition)} · ${num(sample.nominalWeight, 0)} г / ${num(sample.lengthM, 0)} м · ${num(sample.metersPer100g, 0)} м на 100 г`
+      : `${group.length} позиций · ${[...new Set(group.map(item => item.unit))].join(', ')}`;
+    const side = isYarn
+      ? `<div class="catalog-line-side"><b>${group.length} цветов</b><small>${available} сейчас в наличии</small><a class="secondary-btn" href="${esc(sample.supplierUrl)}" target="_blank" rel="noopener">Кудель ↗</a></div>`
+      : `<div class="catalog-line-side"><b>Системная база</b><small>Без бренда и цены</small></div>`;
     return `<section class="card catalog-line-group" data-catalog-group>
       <header class="catalog-line-head">
-        <div><div class="catalog-line-title"><h3>${esc(sample.brand)} · ${esc(sample.line)}</h3><span class="badge ${sample.fitGroup === 'Рекомендовано' ? 'success' : sample.fitGroup === 'Premium' ? 'clay' : ''}">${esc(sample.fitGroup || 'Не оценено')}</span></div>
-        <div class="item-meta">${esc(sample.composition)} · ${num(sample.nominalWeight, 0)} г / ${num(sample.lengthM, 0)} м · ${num(sample.metersPer100g, 0)} м на 100 г</div>
-        <div class="catalog-line-note"><b>${esc(sample.strandRecommendation || 'Требуется тест')}</b><span>${esc(sample.tuftingNote || '')}</span></div></div>
-        <div class="catalog-line-side"><b>${group.length} цветов</b><small>${available} сейчас в наличии</small><a class="secondary-btn" href="${esc(sample.supplierUrl)}" target="_blank" rel="noopener">Кудель ↗</a></div>
+        <div><div class="catalog-line-title"><h3>${title}</h3><span class="badge ${isYarn && sample.fitGroup === 'Рекомендовано' ? 'success' : isYarn && sample.fitGroup === 'Premium' ? 'clay' : ''}">${isYarn ? esc(sample.fitGroup || 'Не оценено') : 'Расходники'}</span></div>
+        <div class="item-meta">${meta}</div>
+        <div class="catalog-line-note"><b>${isYarn ? esc(sample.strandRecommendation || 'Требуется тест') : 'Закупка → склад → списание на проект'}</b><span>${isYarn ? esc(sample.tuftingNote || '') : 'Стоимость покупки автоматически попадёт в финансы, а расход можно связать с конкретным ковром.'}</span></div></div>
+        ${side}
       </header>
       <div class="material-table">${group.map(catalogRow).join('')}</div>
     </section>`;
@@ -1376,14 +1432,14 @@ function renderCatalogGroups(items) {
 function materialRow(m) {
   const catalog = state.materialCatalog.find(item => item.id === m.catalogId);
   const title = catalog ? materialName(catalog) : m.name;
-  const details = catalog
+  const details = catalog?.type === 'Пряжа'
     ? `${catalog.internalCode} · Кудель ${catalog.supplierSku || 'код не указан'}`
-    : `${m.code || m.internalCode || 'Без кода'} · ${m.supplier || 'Поставщик не указан'}`;
-  const search = catalog ? materialSearchText(catalog) : [m.name, m.code, m.supplier].join(' ').toLowerCase();
+    : `${catalog?.internalCode || m.code || m.internalCode || 'Без кода'} · ${m.type}`;
+  const search = catalog ? materialSearchText(catalog) : [m.name, m.code, m.supplier, m.type].join(' ').toLowerCase();
   const swatch = catalog?.swatch || m.swatch || '#e5d8c3';
   return `<div class="material-row" data-material="${m.id}" data-type="${m.type}" data-name="${search}">
     <div class="material-thumb" style="--swatch:${swatch}"></div>
-    <div><div class="item-title">${title}</div><div class="item-meta">${details}</div><div class="item-meta">${m.lots?.filter(l => l.remainingWeight > 0).length || 0} активных партий${m.location ? ` · ${esc(m.location)}` : ''}</div></div>
+    <div><div class="item-title">${esc(title)}</div><div class="item-meta">${esc(details)}</div><div class="item-meta">${m.lots?.filter(l => l.remainingWeight > 0).length || 0} активных партий${m.location ? ` · ${esc(m.location)}` : ''}</div></div>
     <div><div class="material-label">Остаток</div><div class="material-number ${m.stock < m.min ? 'low' : ''}">${num(m.stock,1)} ${m.unit}</div></div>
     <div><div class="material-label">Минимум</div><div class="material-number">${num(m.min,1)} ${m.unit}</div></div>
     <button class="secondary-btn" data-action="adjust-material" data-id="${m.id}">Открыть</button>
@@ -1391,12 +1447,23 @@ function materialRow(m) {
 }
 function catalogRow(item) {
   const inventory = state.materials.find(m => m.catalogId === item.id);
+  const isYarn = item.type === 'Пряжа';
   const availabilityClass = item.availability === 'В наличии' ? 'success' : '';
-  return `<div class="material-row catalog-row" data-catalog="${item.id}" data-type="${esc(item.fitGroup || item.type)}" data-name="${materialSearchText(item)}">
+  const name = isYarn ? `${item.colorCode} ${esc(item.colorName)}` : esc(item.colorName || item.name || item.line);
+  const description = isYarn
+    ? `${esc(item.composition)} · ${item.nominalWeight} г / ${item.lengthM} м · ${esc(item.strandRecommendation || '')}`
+    : `${esc(item.composition || '')} · учёт в ${esc(item.unit)}`;
+  const codes = isYarn
+    ? `<span>${esc(item.internalCode)}</span><span>Кудель ${esc(item.supplierSku || '—')}</span><span class="availability-tag ${availabilityClass}">${esc(item.availability || 'Не проверено')}</span>`
+    : `<span>${esc(item.internalCode)}</span><span>${esc(item.type)}</span><span class="availability-tag">Системная позиция</span>`;
+  const price = isYarn
+    ? `<div><div class="material-label">Цена мотка</div><div class="material-number">${item.lastSkeinPrice ? rub(item.lastSkeinPrice) : '—'}</div><div class="item-meta">${item.pricePer100g ? `${num(item.pricePer100g, 0)} ₽ / 100 г` : ''}</div></div>`
+    : `<div><div class="material-label">Цена</div><div class="material-number">По закупке</div><div class="item-meta">Вносится при поступлении</div></div>`;
+  return `<div class="material-row catalog-row" data-catalog="${item.id}" data-type="${esc(item.type)}" data-name="${materialSearchText(item)}">
     <div class="material-thumb" style="--swatch:${item.swatch || '#e5d8c3'}"></div>
-    <div><div class="item-title">${item.colorCode} ${esc(item.colorName)}</div><div class="item-meta">${esc(item.composition)} · ${item.nominalWeight} г / ${item.lengthM} м · ${esc(item.strandRecommendation || '')}</div><div class="code-line"><span>${esc(item.internalCode)}</span><span>Кудель ${esc(item.supplierSku || '—')}</span><span class="availability-tag ${availabilityClass}">${esc(item.availability || 'Не проверено')}</span></div></div>
-    <div><div class="material-label">Цена мотка</div><div class="material-number">${item.lastSkeinPrice ? rub(item.lastSkeinPrice) : '—'}</div><div class="item-meta">${item.pricePer100g ? `${num(item.pricePer100g, 0)} ₽ / 100 г` : ''}</div></div>
-    <div><div class="material-label">На складе</div><div class="material-number">${inventory ? `${num(inventory.stock,1)} г` : '0 г'}</div></div>
+    <div><div class="item-title">${name}</div><div class="item-meta">${description}</div><div class="code-line">${codes}</div></div>
+    ${price}
+    <div><div class="material-label">На складе</div><div class="material-number">${inventory ? `${num(inventory.stock,1)} ${esc(inventory.unit)}` : `0 ${esc(item.unit)}`}</div></div>
     <div class="row-actions"><button class="secondary-btn" data-action="catalog-receipt" data-id="${item.id}">Поступление</button><button class="icon-mini" data-action="edit-catalog-item" data-id="${item.id}" aria-label="Изменить">⋯</button></div>
   </div>`;
 }
@@ -1456,7 +1523,7 @@ function renderFinance() {
   const channels = new Map();
   summary.sales.forEach(item => channels.set(item.order.source || 'Не указан', (channels.get(item.order.source || 'Не указан') || 0) + item.sale));
   return `
-    ${viewHeader('Финансы и аналитика', 'Платежи, закупки, денежный поток и реальная маржа по коврам.', `<button class="secondary-btn" data-action="new-expense">＋ Расход</button>`)}
+    ${viewHeader('Финансы и аналитика', 'Платежи, закупки, денежный поток и реальная маржа по коврам.', `<button class="secondary-btn" data-action="new-income">＋ Доход</button><button class="secondary-btn" data-action="new-expense">＋ Расход</button>`)}
     <section class="kpi-grid">${kpi('Получено денег', rub(summary.income), 'Все предоплаты и расчёты')}${kpi('Предоплаты', rub(summary.prepayments), 'Отдельно по заказам')}${kpi('Денежные расходы', rub(summary.expenses), 'Материалы и прочие операции')}${kpi('Денежный остаток', rub(summary.cashFlow), 'Получено минус оплаченные расходы')}</section>
     <section class="grid cols-2">
       <article class="card card-pad"><div class="card-head"><h2>Движение денег</h2><small>поступления / расходы</small></div><div class="chart">${months.map(m => `<div class="bar-wrap"><div class="bar" style="height:${(m.revenue||0)/max*100}%"></div><div class="bar profit" style="height:${(m.expenses||0)/max*100}%"></div><span class="bar-label">${m.m}</span></div>`).join('')}</div><div class="legend"><span><i></i>Поступления</span><span><i class="sand"></i>Расходы</span></div></article>
@@ -1486,8 +1553,9 @@ function renderFamily() {
     }).join('')}</section>`;
 }
 function renderMore() {
-  const lineCount = new Set(state.materialCatalog.filter(item => item.system).map(item => item.line)).size;
-  return `${viewHeader('Ещё', 'Все дополнительные разделы VORS Studio.', '')}<div class="mobile-more"><button class="nav-item" data-go="orders"><span>▣</span><b>Клиенты и заказы</b></button><button class="nav-item" data-go="products"><span>◇</span><b>Готовые изделия</b></button><button class="nav-item" data-go="finance"><span>▥</span><b>Финансы и аналитика</b></button><button class="nav-item" data-go="family"><span>♧</span><b>Семейный режим</b></button><button class="nav-item" data-action="role"><span>👤</span><b>Сменить роль</b></button><button class="nav-item danger-action" data-action="clear-data"><span>⌫</span><b>Очистить рабочие данные</b></button></div><article class="card card-pad app-version-card"><div><small>VORS Studio</small><b>Версия ${APP_VERSION}</b><span>Библиотека: ${lineCount} линеек · ${state.materialCatalog.filter(item => item.system).length} вариантов</span></div><div><small>Каталог Куделя</small><b>${CATALOG_CHECKED_AT}</b><span>Справочник сохраняется при очистке</span></div></article>`;
+  const lineCount = new Set(state.materialCatalog.filter(item => item.system && item.type === 'Пряжа').map(item => item.line)).size;
+  const consumableCount = state.materialCatalog.filter(item => item.system && item.type !== 'Пряжа').length;
+  return `${viewHeader('Ещё', 'Все дополнительные разделы VORS Studio.', '')}<div class="mobile-more"><button class="nav-item" data-go="orders"><span>▣</span><b>Клиенты и заказы</b></button><button class="nav-item" data-go="products"><span>◇</span><b>Готовые изделия</b></button><button class="nav-item" data-go="finance"><span>▥</span><b>Финансы и аналитика</b></button><button class="nav-item" data-go="family"><span>♧</span><b>Семейный режим</b></button><button class="nav-item" data-action="role"><span>👤</span><b>Сменить роль</b></button><button class="nav-item danger-action" data-action="clear-data"><span>⌫</span><b>Очистить рабочие данные</b></button></div><article class="card card-pad app-version-card"><div><small>VORS Studio</small><b>Версия ${APP_VERSION}</b><span>Библиотека: ${lineCount} линеек пряжи · ${consumableCount} расходников</span></div><div><small>Пряжа Куделя</small><b>${CATALOG_CHECKED_AT}</b><span>Вся библиотека сохраняется при очистке</span></div></article>`;
 }
 
 function bindViewEvents() {
@@ -1555,6 +1623,7 @@ function handleAction(action, id) {
     'product-card': () => openProduct(id),
     'publish-product': () => openPublish(id),
     'new-product': openNewProduct,
+    'new-income': openIncome,
     'new-expense': openExpense,
     'ship-order': () => shipOrder(id),
     'role': openRoleModal,
@@ -1876,16 +1945,16 @@ function stopTimerLoop(){if(timerInterval){clearInterval(timerInterval);timerInt
 function openCatalogEditor(id = null) {
   const item = state.materialCatalog.find(entry => entry.id === id);
   openModal(item ? 'Редактировать позицию' : 'Новая позиция справочника', `<form id="catalogForm" class="form-grid">
-    <div class="field"><label>Категория</label><select name="type"><option ${item?.type === 'Пряжа' ? 'selected' : ''}>Пряжа</option><option ${item?.type === 'Основа' ? 'selected' : ''}>Основа</option><option ${item?.type === 'Клей' ? 'selected' : ''}>Клей</option><option ${item?.type === 'Подложка' ? 'selected' : ''}>Подложка</option><option ${item?.type === 'Упаковка' ? 'selected' : ''}>Упаковка</option></select></div>
-    <div class="field"><label>Единица учёта</label><select name="unit">${['г','кг','м','л','шт'].map(unit => `<option ${item?.unit === unit || (!item && unit === 'г') ? 'selected' : ''}>${unit}</option>`).join('')}</select></div>
-    <div class="field"><label>Производитель</label><input name="brand" required value="${esc(item?.brand || 'Пехорка')}"></div>
+    <div class="field"><label>Категория</label><select name="type"><option ${item?.type === 'Пряжа' ? 'selected' : ''}>Пряжа</option><option ${item?.type === 'Основа' ? 'selected' : ''}>Основа</option><option ${item?.type === 'Клей' ? 'selected' : ''}>Клей</option><option ${item?.type === 'Подложка' ? 'selected' : ''}>Подложка</option><option ${item?.type === 'Упаковка' ? 'selected' : ''}>Упаковка</option><option ${item?.type === 'Кромка' ? 'selected' : ''}>Кромка</option><option ${item?.type === 'Производство' ? 'selected' : ''}>Производство</option></select></div>
+    <div class="field"><label>Единица учёта</label><select name="unit">${['г','кг','м','м²','мл','л','шт','пара'].map(unit => `<option ${item?.unit === unit || (!item && unit === 'г') ? 'selected' : ''}>${unit}</option>`).join('')}</select></div>
+    <div class="field"><label>Производитель</label><input name="brand" required value="${esc(item?.brand || '')}"></div>
     <div class="field"><label>Линейка / название</label><input name="line" required value="${esc(item?.line || '')}" placeholder="Удачный выбор"></div>
     <div class="field"><label>Код цвета производителя</label><input name="colorCode" value="${esc(item?.colorCode || '')}" placeholder="01"></div>
     <div class="field"><label>Название цвета</label><input name="colorName" value="${esc(item?.colorName || '')}" placeholder="Белый"></div>
     <div class="field"><label>Внутренний код VORS</label><input name="internalCode" value="${esc(item?.internalCode || '')}" placeholder="PEH-UDV-01"></div>
-    <div class="field"><label>Поставщик</label><input name="supplier" value="${esc(item?.supplier || 'Кудель')}"></div>
+    <div class="field"><label>Поставщик</label><input name="supplier" value="${esc(item?.supplier || '')}"></div>
     <div class="field"><label>Артикул Куделя</label><input name="supplierSku" value="${esc(item?.supplierSku || '')}"></div>
-    <div class="field"><label>Ссылка поставщика</label><input name="supplierUrl" type="url" value="${esc(item?.supplierUrl || 'https://kudel.ru/')}"></div>
+    <div class="field"><label>Ссылка поставщика</label><input name="supplierUrl" type="url" value="${esc(item?.supplierUrl || '')}"></div>
     <div class="field"><label>Состав</label><input name="composition" value="${esc(item?.composition || '')}" placeholder="100% объёмный акрил"></div>
     <div class="field"><label>Вес мотка, г</label><input name="nominalWeight" type="number" min="0" step="0.1" value="${item?.nominalWeight || ''}"></div>
     <div class="field"><label>Метраж, м</label><input name="lengthM" type="number" min="0" step="0.1" value="${item?.lengthM || ''}"></div>
@@ -1899,12 +1968,12 @@ function openCatalogEditor(id = null) {
   modalRoot.querySelector('[data-cancel]').onclick = closeModal;
   modalRoot.querySelector('[data-save]').onclick = () => {
     const fd = new FormData(document.getElementById('catalogForm'));
-    if (!fd.get('brand') || !fd.get('line')) return toast('Укажите производителя и линейку');
+    if (!fd.get('line')) return toast('Укажите название или группу позиции');
     const values = {
       type: fd.get('type'), brand: fd.get('brand').trim(), line: fd.get('line').trim(),
       colorCode: fd.get('colorCode').trim(), colorName: fd.get('colorName').trim(),
       internalCode: fd.get('internalCode').trim() || `${fd.get('brand').slice(0,3).toUpperCase()}-${fd.get('line').slice(0,3).toUpperCase()}-${fd.get('colorCode') || 'BASE'}`,
-      supplier: fd.get('supplier').trim() || 'Кудель', supplierSku: fd.get('supplierSku').trim(), supplierUrl: fd.get('supplierUrl').trim(),
+      supplier: fd.get('supplier').trim(), supplierSku: fd.get('supplierSku').trim(), supplierUrl: fd.get('supplierUrl').trim(),
       composition: fd.get('composition').trim(), nominalWeight: Number(fd.get('nominalWeight')) || 0,
       lengthM: Number(fd.get('lengthM')) || 0, unit: fd.get('unit') || (fd.get('type') === 'Пряжа' ? 'г' : 'шт'),
       lastSkeinPrice: Number(fd.get('lastSkeinPrice')) || 0, swatch: fd.get('swatch'), checkedAt: new Date().toLocaleDateString('ru-RU'),
@@ -1919,35 +1988,45 @@ function openCatalogEditor(id = null) {
 function openMaterialReceipt(catalogId = null) {
   let selected = state.materialCatalog.find(item => item.id === catalogId) || null;
   const options = state.materialCatalog.map(item => `<option value="${esc(materialCatalogLabel(item))}"></option>`).join('');
+  const unit = selected?.unit || 'ед.';
+  const defaultMin = selected?.suggestedMin ?? (selected?.type === 'Пряжа' ? selected.nominalWeight * 2 : 0);
   openModal('Поступление материала', `<form id="receiptForm" class="form-grid">
-    <div class="field full"><label>Материал из справочника</label><input id="catalogLookup" list="catalogOptions" autocomplete="off" placeholder="Начните вводить Пехорка, цвет или артикул" value="${selected ? esc(materialCatalogLabel(selected)) : ''}"><datalist id="catalogOptions">${options}</datalist></div>
-    <div class="field full"><div class="catalog-preview" id="receiptPreview">${selected ? receiptPreview(selected) : '<div class="empty compact"><strong>Выберите точную позицию</strong>Поиск работает по бренду, линейке, цвету, внутреннему коду и артикулу Куделя.</div>'}</div></div>
-    <div class="field"><label>Фактический вес поступления, г</label><input name="weight" type="number" min="0.1" step="0.1" required placeholder="500"></div>
-    <div class="field"><label>Общая стоимость покупки, ₽</label><input name="price" type="number" min="0" step="0.01" placeholder="735"></div>
-    <div class="field"><label>Минимальный остаток, г</label><input name="min" type="number" min="0" step="0.1" value="${selected ? selected.nominalWeight * 2 : 200}"></div>
+    <div class="field full"><label>Материал из библиотеки</label><input id="catalogLookup" list="catalogOptions" autocomplete="off" placeholder="Пряжа, полотно, подложка, клей, упаковка…" value="${selected ? esc(materialCatalogLabel(selected)) : ''}"><datalist id="catalogOptions">${options}</datalist></div>
+    <div class="field full"><div class="catalog-preview" id="receiptPreview">${selected ? receiptPreview(selected) : '<div class="empty compact"><strong>Выберите точную позицию</strong>Поиск работает по названию, категории, цвету, внутреннему коду и артикулу.</div>'}</div></div>
+    <div class="field"><label id="receiptQuantityLabel">Количество поступления, ${unit}</label><input name="weight" type="number" min="0.01" step="0.01" required placeholder="${selected?.type === 'Пряжа' ? '500' : '1'}"></div>
+    <div class="field"><label>Общая стоимость покупки, ₽</label><input name="price" type="number" min="0" step="0.01" placeholder="0"></div>
+    <div class="field"><label id="receiptMinLabel">Минимальный остаток, ${unit}</label><input name="min" type="number" min="0" step="0.01" value="${defaultMin || 0}"></div>
     <div class="field"><label>Дата поступления</label><input name="date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
-    <div class="field"><label>Партия с этикетки</label><input name="batch" placeholder="Необязательно"></div>
-    <div class="field"><label>Количество мотков</label><input name="skeins" type="number" min="0" step="1" placeholder="5"></div>
+    <div class="field"><label>Партия / обозначение на упаковке</label><input name="batch" placeholder="Необязательно"></div>
+    <div class="field"><label>Количество упаковок / мотков</label><input name="skeins" type="number" min="0" step="1" placeholder="1"></div>
     <div class="field"><label>Место хранения</label><input name="location" placeholder="Стеллаж А · ящик 2"></div>
-    <div class="field full"><label>Комментарий</label><textarea name="note" placeholder="Например: взвешено без бумажных этикеток"></textarea></div>
+    <div class="field full"><label>Комментарий</label><textarea name="note" placeholder="Размер рулона, поставщик, особенности закупки…"></textarea></div>
   </form>`, `<button class="secondary-btn" data-cancel>Отмена</button><button class="primary-btn" data-save>Принять на склад</button>`);
   const lookup = document.getElementById('catalogLookup');
   const preview = document.getElementById('receiptPreview');
+  const quantityLabel = document.getElementById('receiptQuantityLabel');
+  const minLabel = document.getElementById('receiptMinLabel');
+  const minInput = document.querySelector('#receiptForm [name="min"]');
   const updateSelected = () => {
     const value = lookup.value.trim().toLowerCase();
     selected = state.materialCatalog.find(item => materialCatalogLabel(item).toLowerCase() === value)
-      || state.materialCatalog.find(item => [item.internalCode, item.supplierSku, `${item.colorCode} ${item.colorName}`].filter(Boolean).some(token => String(token).toLowerCase() === value));
-    preview.innerHTML = selected ? receiptPreview(selected) : '<div class="empty compact"><strong>Позиция не найдена</strong>Выберите вариант из подсказок или сначала добавьте его в справочник.</div>';
+      || state.materialCatalog.find(item => [item.internalCode, item.supplierSku, `${item.colorCode} ${item.colorName}`, item.colorName, item.name].filter(Boolean).some(token => String(token).toLowerCase() === value));
+    preview.innerHTML = selected ? receiptPreview(selected) : '<div class="empty compact"><strong>Позиция не найдена</strong>Выберите вариант из подсказок или сначала добавьте его в библиотеку.</div>';
+    if (selected) {
+      quantityLabel.textContent = `Количество поступления, ${selected.unit}`;
+      minLabel.textContent = `Минимальный остаток, ${selected.unit}`;
+      if (!Number(minInput.value)) minInput.value = selected.suggestedMin ?? (selected.type === 'Пряжа' ? selected.nominalWeight * 2 : 0);
+    }
   };
   lookup.addEventListener('input', updateSelected);
   lookup.addEventListener('change', updateSelected);
   modalRoot.querySelector('[data-cancel]').onclick = closeModal;
   modalRoot.querySelector('[data-save]').onclick = () => {
     updateSelected();
-    if (!selected) return toast('Выберите материал из справочника');
+    if (!selected) return toast('Выберите материал из библиотеки');
     const fd = new FormData(document.getElementById('receiptForm'));
-    const weight = Number(fd.get('weight')) || 0;
-    if (weight <= 0) return toast('Укажите фактический вес');
+    const quantity = Number(fd.get('weight')) || 0;
+    if (quantity <= 0) return toast(`Укажите количество в ${selected.unit}`);
     const totalPrice = Number(fd.get('price')) || 0;
     let inventory = state.materials.find(item => item.catalogId === selected.id);
     if (!inventory) {
@@ -1957,27 +2036,34 @@ function openMaterialReceipt(catalogId = null) {
         brand: selected.brand, line: selected.line, colorCode: selected.colorCode, colorName: selected.colorName,
         supplier: selected.supplier, supplierSku: selected.supplierSku, supplierUrl: selected.supplierUrl,
         composition: selected.composition, nominalWeight: selected.nominalWeight, lengthM: selected.lengthM,
-        swatch: selected.swatch, stock: 0, min: Number(fd.get('min')) || 0, unit: selected.unit || 'г', pricePerUnit: 0, location: fd.get('location')?.trim() || ''
+        swatch: selected.swatch, stock: 0, min: Number(fd.get('min')) || 0, unit: selected.unit || 'шт', pricePerUnit: 0, location: fd.get('location')?.trim() || ''
       });
       state.materials.unshift(inventory);
     }
-    const oldStock = inventory.stock || 0;
-    const oldValue = oldStock * (inventory.pricePerUnit || 0);
-    inventory.stock = oldStock + weight;
+    const oldStock = Number(inventory.stock) || 0;
+    const oldValue = oldStock * (Number(inventory.pricePerUnit) || 0);
+    inventory.stock = oldStock + quantity;
     inventory.min = Number(fd.get('min')) || inventory.min || 0;
     if (fd.get('location')?.trim()) inventory.location = fd.get('location').trim();
     inventory.pricePerUnit = inventory.stock ? (oldValue + totalPrice) / inventory.stock : 0;
     inventory.lots = inventory.lots || [];
     inventory.movements = inventory.movements || [];
     const date = fd.get('date') || new Date().toISOString().slice(0,10);
-    inventory.lots.unshift({ id: `LOT-${Date.now()}`, date, batch: fd.get('batch') || 'Не указана', skeins: Number(fd.get('skeins')) || 0, initialWeight: weight, remainingWeight: weight, purchasePrice: totalPrice, note: fd.get('note') || '' });
-    inventory.movements.unshift({ id: `MOV-${Date.now()}`, date, type: 'Поступление', delta: weight, reason: fd.get('note') || 'Закупка у поставщика' });
-    selected.lastSkeinPrice = totalPrice && Number(fd.get('skeins')) ? totalPrice / Number(fd.get('skeins')) : selected.lastSkeinPrice;
-    markSaving(); closeModal(); state.materialView = 'stock'; render(); toast(`Принято ${num(weight,1)} г`);
+    inventory.lots.unshift({ id: `LOT-${Date.now()}`, date, batch: fd.get('batch') || 'Не указана', skeins: Number(fd.get('skeins')) || 0, initialWeight: quantity, remainingWeight: quantity, purchasePrice: totalPrice, note: fd.get('note') || '' });
+    inventory.movements.unshift({ id: `MOV-${Date.now()}`, date, type: 'Поступление', delta: quantity, reason: fd.get('note') || 'Закупка' });
+    if (selected.type === 'Пряжа' && totalPrice && Number(fd.get('skeins'))) selected.lastSkeinPrice = totalPrice / Number(fd.get('skeins'));
+    markSaving(); closeModal(); state.materialView = 'stock'; render(); toast(`Принято ${num(quantity,2)} ${selected.unit}`);
   };
 }
 function receiptPreview(item) {
-  return `<div class="catalog-preview-card"><div class="material-thumb" style="--swatch:${item.swatch || '#e5d8c3'}"></div><div><b>${materialName(item)}</b><div class="item-meta">${item.composition} · ${item.nominalWeight} г / ${item.lengthM} м · ${item.strandRecommendation || 'нужен тест'}</div><div class="code-line"><span>${item.internalCode}</span><span>Кудель ${item.supplierSku || '—'}</span><span>${item.fitGroup || 'Не оценено'}</span></div></div></div>`;
+  const isYarn = item.type === 'Пряжа';
+  const meta = isYarn
+    ? `${item.composition} · ${item.nominalWeight} г / ${item.lengthM} м · ${item.strandRecommendation || 'нужен тест'}`
+    : `${item.composition || item.type} · единица учёта: ${item.unit}`;
+  const codes = isYarn
+    ? `<span>${item.internalCode}</span><span>Кудель ${item.supplierSku || '—'}</span><span>${item.fitGroup || 'Не оценено'}</span>`
+    : `<span>${item.internalCode}</span><span>${item.type}</span><span>${item.tuftingNote || 'Системный расходник'}</span>`;
+  return `<div class="catalog-preview-card"><div class="material-thumb" style="--swatch:${item.swatch || '#e5d8c3'}"></div><div><b>${esc(materialName(item))}</b><div class="item-meta">${esc(meta)}</div><div class="code-line">${codes}</div></div></div>`;
 }
 function consumeLots(material, amount) {
   let rest = amount;
@@ -1993,18 +2079,19 @@ function adjustMaterial(id) {
   const catalog = state.materialCatalog.find(item => item.id === material.catalogId);
   const lots = (material.lots || []).filter(lot => lot.remainingWeight > 0);
   const movements = (material.movements || []).slice(0, 6);
-  openModal(catalog ? materialName(catalog) : material.name, `<div class="material-detail-head"><div class="material-thumb large" style="--swatch:${catalog?.swatch || material.swatch || '#e5d8c3'}"></div><div><div class="item-meta">${catalog?.internalCode || material.internalCode || material.code || ''}</div><h3>${catalog ? `${catalog.colorCode} ${catalog.colorName}` : material.name}</h3><div class="item-meta">${catalog?.composition || material.composition || ''}</div></div></div>
-    <div class="detail-grid" style="margin-top:16px"><div class="detail-tile"><small>Фактический остаток</small><b>${num(material.stock,1)} ${material.unit}</b></div><div class="detail-tile"><small>Минимум</small><b>${num(material.min,1)} ${material.unit}</b></div><div class="detail-tile"><small>Средняя цена</small><b>${num(material.pricePerUnit || 0, 2)} ₽ / г</b></div><div class="detail-tile"><small>Стоимость остатка</small><b>${rub(material.stock * (material.pricePerUnit || 0))}</b></div><div class="detail-tile"><small>Место хранения</small><b>${esc(material.location || 'Не назначено')}</b></div></div>
-    ${catalog ? `<div class="detail-tile" style="margin-top:12px"><small>Закупка</small><div class="code-line"><span>Кудель ${catalog.supplierSku || '—'}</span><span>${catalog.checkedAt ? `проверено ${catalog.checkedAt}` : ''}</span></div></div>` : ''}
-    <div class="card-head" style="margin-top:18px"><h3>Активные партии</h3><small>${lots.length}</small></div><div class="lot-list">${lots.length ? lots.map(lot => `<div class="lot-row"><div><b>${lot.batch}</b><div class="item-meta">${lot.date}${lot.skeins ? ` · ${lot.skeins} мот.` : ''}</div></div><div><b>${num(lot.remainingWeight,1)} г</b><div class="item-meta">из ${num(lot.initialWeight,1)} г</div></div></div>`).join('') : '<div class="empty compact"><strong>Активных партий нет</strong></div>'}</div>
-    <div class="card-head" style="margin-top:18px"><h3>Последние движения</h3></div><div class="lot-list">${movements.length ? movements.map(move => `<div class="lot-row"><div><b>${move.type}</b><div class="item-meta">${move.date} · ${move.reason}</div></div><b class="${move.delta < 0 ? 'negative' : 'positive'}">${move.delta > 0 ? '+' : ''}${num(move.delta,1)} г</b></div>`).join('') : '<div class="empty compact"><strong>Движений пока нет</strong></div>'}</div>`, `<button class="secondary-btn" data-adjust>Корректировка</button>${catalog?.supplierUrl ? '<button class="secondary-btn" data-supplier>Открыть Кудель</button>' : ''}<button class="primary-btn" data-receipt>Поступление</button>`);
+  const isYarn = catalog?.type === 'Пряжа';
+  openModal(catalog ? materialName(catalog) : material.name, `<div class="material-detail-head"><div class="material-thumb large" style="--swatch:${catalog?.swatch || material.swatch || '#e5d8c3'}"></div><div><div class="item-meta">${catalog?.internalCode || material.internalCode || material.code || ''}</div><h3>${esc(catalog ? materialName(catalog) : material.name)}</h3><div class="item-meta">${esc(catalog?.composition || material.composition || material.type || '')}</div></div></div>
+    <div class="detail-grid" style="margin-top:16px"><div class="detail-tile"><small>Фактический остаток</small><b>${num(material.stock,2)} ${material.unit}</b></div><div class="detail-tile"><small>Минимум</small><b>${num(material.min,2)} ${material.unit}</b></div><div class="detail-tile"><small>Средняя цена</small><b>${num(material.pricePerUnit || 0, 2)} ₽ / ${material.unit}</b></div><div class="detail-tile"><small>Стоимость остатка</small><b>${rub(material.stock * (material.pricePerUnit || 0))}</b></div><div class="detail-tile"><small>Место хранения</small><b>${esc(material.location || 'Не назначено')}</b></div></div>
+    ${isYarn ? `<div class="detail-tile" style="margin-top:12px"><small>Закупка</small><div class="code-line"><span>Кудель ${catalog.supplierSku || '—'}</span><span>${catalog.checkedAt ? `проверено ${catalog.checkedAt}` : ''}</span></div></div>` : ''}
+    <div class="card-head" style="margin-top:18px"><h3>Активные партии</h3><small>${lots.length}</small></div><div class="lot-list">${lots.length ? lots.map(lot => `<div class="lot-row"><div><b>${esc(lot.batch)}</b><div class="item-meta">${lot.date}${lot.skeins ? ` · ${lot.skeins} уп.` : ''}</div></div><div><b>${num(lot.remainingWeight,2)} ${material.unit}</b><div class="item-meta">из ${num(lot.initialWeight,2)} ${material.unit}</div></div></div>`).join('') : '<div class="empty compact"><strong>Активных партий нет</strong></div>'}</div>
+    <div class="card-head" style="margin-top:18px"><h3>Последние движения</h3></div><div class="lot-list">${movements.length ? movements.map(move => `<div class="lot-row"><div><b>${move.type}</b><div class="item-meta">${move.date} · ${esc(move.reason)}</div></div><b class="${move.delta < 0 ? 'negative' : 'positive'}">${move.delta > 0 ? '+' : ''}${num(move.delta,2)} ${material.unit}</b></div>`).join('') : '<div class="empty compact"><strong>Движений пока нет</strong></div>'}</div>`, `<button class="secondary-btn" data-adjust>Корректировка / расход</button>${catalog?.supplierUrl ? '<button class="secondary-btn" data-supplier>Открыть Кудель</button>' : ''}<button class="primary-btn" data-receipt>Поступление</button>`);
   modalRoot.querySelector('[data-receipt]').onclick = () => { closeModal(); openMaterialReceipt(material.catalogId); };
   modalRoot.querySelector('[data-adjust]').onclick = () => { closeModal(); openMaterialAdjustment(material.id); };
   modalRoot.querySelector('[data-supplier]')?.addEventListener('click', () => window.open(catalog.supplierUrl, '_blank', 'noopener'));
 }
 function openMaterialAdjustment(id) {
   const material = state.materials.find(item => item.id === id); if (!material) return;
-  openModal('Корректировка остатка', `<div class="detail-tile"><small>Сейчас на складе</small><b>${num(material.stock,1)} ${material.unit}</b></div><form id="adjustForm" class="form-grid" style="margin-top:14px"><div class="field"><label>Изменение в граммах</label><input name="delta" type="number" step="0.1" required placeholder="-150 или 50"></div><div class="field"><label>Минимальный остаток</label><input name="min" type="number" min="0" step="0.1" value="${material.min || 0}"></div><div class="field"><label>Место хранения</label><input name="location" value="${esc(material.location || '')}" placeholder="Стеллаж А · ящик 2"></div><div class="field"><label>Отнести расход к ковру</label><select name="productionId"><option value="">Не связывать</option>${state.productions.map(item => `<option value="${item.id}">${esc(item.name)} · ${item.id}</option>`).join('')}</select></div><div class="field full"><label>Причина</label><input name="reason" placeholder="Расход на проект, инвентаризация, пересыпали остаток…"></div></form>`, `<button class="secondary-btn" data-cancel>Отмена</button><button class="primary-btn" data-save>Применить</button>`);
+  openModal('Корректировка / расход', `<div class="detail-tile"><small>Сейчас на складе</small><b>${num(material.stock,2)} ${material.unit}</b></div><form id="adjustForm" class="form-grid" style="margin-top:14px"><div class="field"><label>Изменение, ${material.unit}</label><input name="delta" type="number" step="0.01" required placeholder="-1 или 5"></div><div class="field"><label>Минимальный остаток, ${material.unit}</label><input name="min" type="number" min="0" step="0.01" value="${material.min || 0}"></div><div class="field"><label>Место хранения</label><input name="location" value="${esc(material.location || '')}" placeholder="Стеллаж А · ящик 2"></div><div class="field"><label>Отнести расход к ковру</label><select name="productionId"><option value="">Не связывать</option>${state.productions.map(item => `<option value="${item.id}">${esc(item.name)} · ${item.id}</option>`).join('')}</select></div><div class="field full"><label>Причина</label><input name="reason" placeholder="Расход на проект, упаковка, инвентаризация…"></div></form>`, `<button class="secondary-btn" data-cancel>Отмена</button><button class="primary-btn" data-save>Применить</button>`);
   modalRoot.querySelector('[data-cancel]').onclick = closeModal;
   modalRoot.querySelector('[data-save]').onclick = () => {
     const fd = new FormData(document.getElementById('adjustForm'));
@@ -2030,7 +2117,7 @@ function openMaterialAdjustment(id) {
     }
     material.movements = material.movements || [];
     material.movements.unshift({ id: `MOV-${Date.now()}`, date: todayISO(), type: delta > 0 ? 'Корректировка +' : 'Расход', delta, reason: fd.get('reason') || 'Без комментария', productionId, projectName: linkedProduction?.name || '', cost: consumptionCost });
-    markSaving(); closeModal(); render(); toast(linkedProduction && consumptionCost > 0 ? `Остаток обновлён · в себестоимость ${rub(consumptionCost)}` : 'Остаток обновлён');
+    markSaving(); closeModal(); render(); toast(linkedProduction && consumptionCost > 0 ? `Списано ${num(Math.abs(delta),2)} ${material.unit} · в себестоимость ${rub(consumptionCost)}` : 'Остаток обновлён');
   };
 }
 
@@ -2173,9 +2260,22 @@ function openPublish(id) {
   modalRoot.querySelector('[data-save]').onclick=()=>{p.channels=[...modalRoot.querySelectorAll('[data-channel].active')].map(b=>b.dataset.channel);p.status=p.channels.length?'Опубликован':p.status;markSaving();closeModal();render();toast('Площадки сохранены');};
 }
 function openNewProduct(){toast('Готовое изделие создаётся автоматически после завершения производства');}
+function openIncome() {
+  openModal('Новый доход', `<form id="incomeForm" class="form-grid"><div class="field"><label>Категория</label><select name="category"><option>Прочая продажа</option><option>Компенсация</option><option>Возврат средств</option><option>Прочий доход</option></select></div><div class="field"><label>Сумма</label><input name="amount" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Дата</label><input name="date" type="date" value="${todayISO()}"></div><div class="field full"><label>Комментарий</label><textarea name="note" placeholder="Доход, который не прошёл через карточку заказа"></textarea></div></form>`, `<button class="secondary-btn" data-cancel>Отмена</button><button class="primary-btn" data-save>Сохранить</button>`);
+  modalRoot.querySelector('[data-cancel]').onclick = closeModal;
+  modalRoot.querySelector('[data-save]').onclick = () => {
+    const fd = new FormData(document.getElementById('incomeForm'));
+    const amount = Number(fd.get('amount')) || 0;
+    if (amount <= 0) return toast('Укажите сумму дохода');
+    state.finance.transactions = state.finance.transactions || [];
+    state.finance.transactions.unshift({ id: `INC-${Date.now()}`, kind: 'income', category: fd.get('category'), amount, date: fd.get('date') || todayISO(), title: fd.get('category'), note: fd.get('note') || '', source: 'Ручной доход' });
+    markSaving(); closeModal(); render(); toast('Доход сохранён');
+  };
+}
 function openExpense() {
   const projectOptions = state.projects.map(project => `<option value="${project.id}">${esc(project.name)}</option>`).join('');
-  openModal('Новый расход', `<form id="expenseForm" class="form-grid"><div class="field"><label>Категория</label><select name="category"><option>Материалы</option><option>Реклама</option><option>Упаковка</option><option>Доставка</option><option>Оборудование</option><option>Прочее</option></select></div><div class="field"><label>Сумма</label><input name="amount" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Дата</label><input name="date" type="date" value="${todayISO()}"></div><div class="field"><label>Отнести к себестоимости проекта</label><select name="projectId"><option value="">Не связывать</option>${projectOptions}</select></div><div class="field full"><label>Комментарий</label><textarea name="note"></textarea></div></form>`, `<button class="secondary-btn" data-cancel>Отмена</button><button class="primary-btn" data-save>Сохранить</button>`);
+  const categories = ['Материалы','Упаковка','Доставка и логистика','Реклама и продвижение','Комиссии площадок / эквайринг','Налоги и сборы','Электроэнергия','Оборудование и ремонт','Связь и сервисы','Брак и возвраты','Прочее'];
+  openModal('Новый расход', `<form id="expenseForm" class="form-grid"><div class="field"><label>Категория</label><select name="category">${categories.map(item => `<option>${item}</option>`).join('')}</select></div><div class="field"><label>Сумма</label><input name="amount" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Дата</label><input name="date" type="date" value="${todayISO()}"></div><div class="field"><label>Отнести к себестоимости проекта</label><select name="projectId"><option value="">Не связывать</option>${projectOptions}</select></div><div class="field full"><label>Комментарий</label><textarea name="note"></textarea></div></form>`, `<button class="secondary-btn" data-cancel>Отмена</button><button class="primary-btn" data-save>Сохранить</button>`);
   modalRoot.querySelector('[data-cancel]').onclick = closeModal;
   modalRoot.querySelector('[data-save]').onclick = () => {
     const fd = new FormData(document.getElementById('expenseForm'));
@@ -2191,6 +2291,7 @@ function openExpense() {
     markSaving(); closeModal(); render(); toast(project ? 'Расход сохранён и добавлен в себестоимость' : 'Расход сохранён');
   };
 }
+
 function shipOrder(id) {
   const shipment = state.shipments.find(item => item.orderId === id); if (!shipment) return toast('Отгрузка не подготовлена');
   const order = state.orders.find(item => item.id === id);
