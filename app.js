@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'vors-studio-0.1.1';
-const APP_VERSION = '0.7.0';
+const APP_VERSION = '0.8.0';
 const CATALOG_CHECKED_AT = '05.08.2026';
 const CATALOG_SCOPE_NOTE = 'Варианты, опубликованные Куделем в таблицах товаров на дату проверки';
 
@@ -954,7 +954,7 @@ function normalizeOrder(item) {
   if (!payments.length && Number(item.prepaid) > 0) {
     payments = [{ id: `PAY-${item.id || Date.now()}-PRE`, type: 'Предоплата', amount: Number(item.prepaid), date: createdAt, note: 'Перенесено из карточки заказа' }];
   }
-  return { coverImage: '', projectId: '', history: [], payments, createdAt, completedAt: null, shippedAt: null, isTest: false, ...item, payments };
+  return { coverImage: '', projectId: '', productionId: '', history: [], payments, createdAt, completedAt: null, shippedAt: null, isTest: false, ...item, payments };
 }
 function normalizeProduct(item) {
   const archived = ['Продан', 'Отправлен', 'Завершён'].includes(item.status);
@@ -985,7 +985,28 @@ function reconcileLoadedState(merged) {
     const materialCost = Math.max(Number(item.materialCost) || 0, usageCost);
     const existingCost = Number(item.cost) || 0;
     const extraCost = Math.max(Number(item.extraCost) || 0, existingCost - materialCost, 0);
-    return { coverImage: '', completedAt: null, isTest: false, handoffStatus: '', ...item, materialUsage, materialCost, extraCost, cost: materialCost + extraCost };
+    return { coverImage: '', orderId: '', sourceType: item.orderId ? 'order' : 'stock', completedAt: null, isTest: false, handoffStatus: '', ...item, materialUsage, materialCost, extraCost, cost: materialCost + extraCost };
+  });
+
+  // Миграция старых производственных карточек: отделяем клиентские заказы от ковров «на склад».
+  merged.productions.forEach(production => {
+    if (production.orderId) {
+      production.sourceType = 'order';
+      const linkedOrder = merged.orders.find(order => order.id === production.orderId);
+      if (linkedOrder) linkedOrder.productionId = production.id;
+      return;
+    }
+    const candidates = merged.orders.filter(order =>
+      ((production.projectId && order.projectId === production.projectId) || order.project === production.name) &&
+      (Number(order.progress) > 0 || ['В работе','Готов','К отправке','Отправлен'].includes(order.status))
+    );
+    if (candidates.length === 1) {
+      production.orderId = candidates[0].id;
+      production.sourceType = 'order';
+      candidates[0].productionId = production.id;
+    } else {
+      production.sourceType = 'stock';
+    }
   });
 
   // Переносим старые складские списания, которые уже были связаны с производством,
@@ -1015,14 +1036,14 @@ function reconcileLoadedState(merged) {
 
   merged.productions.filter(item => Number(item.progress) >= 100).forEach(production => {
     const project = merged.projects.find(entry => entry.id === production.projectId) || merged.projects.find(entry => entry.name === production.name);
-    const order = merged.orders.find(entry => entry.projectId === production.projectId) || merged.orders.find(entry => entry.project === production.name);
-    let product = merged.products.find(entry => entry.productionId === production.id || entry.id === production.id || (entry.projectId && entry.projectId === production.projectId));
+    const order = production.orderId ? merged.orders.find(entry => entry.id === production.orderId) : null;
+    let product = merged.products.find(entry => entry.productionId === production.id || entry.id === production.id);
     if (!product) {
       product = normalizeProduct({
         id: production.id, productionId: production.id, projectId: production.projectId || project?.id || '', orderId: order?.id || '',
         name: production.name, pattern: production.pattern, coverImage: production.coverImage || project?.coverImage || '',
-        size: project?.size || order?.size || '', composition: project?.material || order?.material || '', base: 'Тафтинговая ткань', pile: '12 мм',
-        care: 'Сухая чистка', retail: project?.price || order?.amount || 0, minimum: Math.round((project?.price || order?.amount || 0) * .78),
+        size: order?.size || project?.size || '', composition: order?.material || project?.material || '', base: 'Тафтинговая ткань', pile: '12 мм',
+        care: 'Сухая чистка', retail: order?.amount || project?.price || 0, minimum: Math.round((order?.amount || project?.price || 0) * .78),
         location: 'Не назначено', status: 'Готов к фото', cost: Number(production.cost) || 0, createdAt: production.completedAt || todayISO(), isTest: Boolean(production.isTest || project?.isTest || order?.isTest)
       });
       merged.products.unshift(product);
@@ -1036,8 +1057,8 @@ function reconcileLoadedState(merged) {
 
   merged.orders.filter(order => order.status === 'Отправлен').forEach(order => {
     const project = merged.projects.find(entry => entry.id === order.projectId) || merged.projects.find(entry => entry.name === order.project);
-    const production = merged.productions.find(entry => entry.projectId === order.projectId) || merged.productions.find(entry => entry.name === order.project);
-    let product = merged.products.find(entry => entry.orderId === order.id || (order.projectId && entry.projectId === order.projectId) || entry.productionId === production?.id);
+    const production = merged.productions.find(entry => entry.orderId === order.id) || (order.productionId ? merged.productions.find(entry => entry.id === order.productionId) : null);
+    let product = merged.products.find(entry => entry.orderId === order.id || entry.productionId === production?.id);
     if (!product) {
       product = normalizeProduct({
         id: production?.id || `RUG-${order.id}`, productionId: production?.id || '', projectId: order.projectId || project?.id || '', orderId: order.id,
@@ -1059,7 +1080,7 @@ function reconcileLoadedState(merged) {
     product.completedAt = product.completedAt || product.shippedAt;
     order.shippedAt = order.shippedAt || product.shippedAt;
     order.completedAt = order.completedAt || product.shippedAt;
-    if (project) { project.status = 'Завершён'; project.progress = 100; project.completedAt = project.completedAt || product.shippedAt; }
+    // Проект остаётся шаблоном/дизайном и не закрывается вместе с клиентским заказом.
   });
   return merged;
 }
@@ -1205,12 +1226,28 @@ function testBadge(item) { return item?.isTest ? '<span class="badge test">Те�
 
 function orderPaid(order) { return (order?.payments || []).reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0); }
 function orderPrepaid(order) { return (order?.payments || []).filter(payment => payment.type === 'Предоплата').reduce((sum, payment) => sum + (Number(payment.amount) || 0), 0); }
-function productForOrder(order) {
-  const production = state.productions.find(item => item.projectId === order?.projectId) || state.productions.find(item => item.name === order?.project);
-  return state.products.find(item => item.orderId === order?.id || (order?.projectId && item.projectId === order.projectId) || item.productionId === production?.id);
-}
 function productionForOrder(order) {
-  return state.productions.find(item => item.projectId === order?.projectId) || state.productions.find(item => item.name === order?.project);
+  if (!order) return null;
+  return state.productions.find(item => item.orderId === order.id)
+    || (order.productionId ? state.productions.find(item => item.id === order.productionId) : null)
+    || state.productions.find(item => item.sourceType !== 'stock' && !item.orderId && ((order.projectId && item.projectId === order.projectId) || item.name === order.project));
+}
+function orderForProduction(production) {
+  if (!production) return null;
+  if (production.orderId) return state.orders.find(order => order.id === production.orderId) || null;
+  if (production.sourceType === 'stock') return null;
+  const candidates = state.orders.filter(order => (production.projectId && order.projectId === production.projectId) || order.project === production.name);
+  return candidates.length === 1 ? candidates[0] : null;
+}
+function projectForProduction(production) {
+  if (!production) return null;
+  if (production.projectId) return state.projects.find(project => project.id === production.projectId) || null;
+  if (production.sourceType === 'order') return null;
+  return state.projects.find(project => project.name === production.name) || null;
+}
+function productForOrder(order) {
+  const production = productionForOrder(order);
+  return state.products.find(item => item.orderId === order?.id || item.productionId === production?.id);
 }
 function transactionsLedger() {
   const entries = [];
@@ -1297,8 +1334,6 @@ function finalizeOrder(order) {
   product.shippedAt = order.shippedAt;
   product.completedAt = product.completedAt || order.shippedAt;
   product.isTest = Boolean(product.isTest || order.isTest);
-  const project = state.projects.find(item => item.id === order.projectId) || state.projects.find(item => item.name === order.project);
-  if (project) { project.status = 'Завершён'; project.progress = 100; project.completedAt = order.shippedAt; }
   const production = productionForOrder(order);
   if (production) { production.progress = 100; production.timerRunning = false; production.completedAt = production.completedAt || order.shippedAt; production.handoffStatus = 'shipped'; }
   const shipment = state.shipments.find(item => item.orderId === order.id);
@@ -1378,7 +1413,7 @@ function renderToday() {
 }
 function renderProjects() {
   return `
-    ${viewHeader('Проекты и коллекции', 'Идеи, расчёты и готовые проекты — в одном месте.', `<button class="primary-btn" data-action="new-project">＋ Новый проект</button>`)}
+    ${viewHeader('Проекты и коллекции', 'Дизайны для товарного склада и шаблоны, которые можно использовать в заказах.', `<button class="primary-btn" data-action="new-project">＋ Новый проект</button>`)}
     <div class="toolbar"><div class="search"><input id="projectSearch" placeholder="Поиск проектов" /></div><div class="chips" id="projectChips"><button class="chip active" data-filter="Все">Все</button>${[...new Set(state.projects.map(p => p.category))].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
     <section class="project-grid" id="projectGrid">
       ${state.projects.length ? state.projects.map(projectCard).join('') : '<article class="card empty"><strong>Проектов пока нет</strong>Создайте первый дизайн и рассчитайте его стоимость.</article>'}
@@ -1412,7 +1447,7 @@ function recalcProductionCost(production) {
   production.materialCost = materialCost;
   production.extraCost = Number(production.extraCost) || 0;
   production.cost = materialCost + production.extraCost;
-  const product = state.products.find(item => item.productionId === production.id || item.id === production.id || (production.projectId && item.projectId === production.projectId));
+  const product = state.products.find(item => item.productionId === production.id || item.id === production.id);
   if (product) product.cost = production.cost;
 }
 function usageHasTypes(production, types = []) {
@@ -1450,11 +1485,11 @@ function renderProduction() {
         const requiredReady = checklist.filter(item => item.required).every(item => item.done);
         return `
         <article class="card production-card">
-          <div class="production-card-head"><div class="thumb">${visualForProduction(p)}</div><div style="flex:1"><div class="project-top"><div><div class="project-name">${p.name}</div><div class="project-meta">${p.id}</div></div><div class="badge-group">${testBadge(p)}<span class="badge ${statusClass(p.progress >= 100 ? 'Готов' : 'В работе')}">${p.progress >= 100 ? 'Готов' : 'В работе'}</span></div></div><div style="margin-top:10px">${progress(p.progress)}</div></div><div class="item-side"><div class="timer" data-timer="${p.id}">${fmtTime(p.timerSeconds)}</div><div class="item-meta">активное время</div></div></div>
+          <div class="production-card-head"><div class="thumb">${visualForProduction(p)}</div><div style="flex:1"><div class="project-top"><div><div class="project-name">${p.name}</div><div class="project-meta">${p.sourceType === 'order' && orderForProduction(p) ? `${orderForProduction(p).id} · ${esc(orderForProduction(p).client)}` : `На склад · ${p.projectId || p.id}`}</div></div><div class="badge-group">${testBadge(p)}<span class="badge ${statusClass(p.progress >= 100 ? 'Готов' : 'В работе')}">${p.progress >= 100 ? 'Готов' : 'В работе'}</span></div></div><div style="margin-top:10px">${progress(p.progress)}</div></div><div class="item-side"><div class="timer" data-timer="${p.id}">${fmtTime(p.timerSeconds)}</div><div class="item-meta">активное время</div></div></div>
           <div class="grid cols-4 production-kpis" style="margin-top:14px"><div class="detail-tile"><small>План</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Факт</small><b>${p.elapsedDays} дней</b></div><div class="detail-tile"><small>Материалы</small><b>${rub(p.materialCost || 0)}</b><span>${productionUsage(p).length} поз.</span></div><div class="detail-tile"><small>Себестоимость</small><b>${rub(p.cost)}</b><span>${requiredReady ? 'Основное учтено' : 'Есть пропуски'}</span></div></div>
           <div class="material-check-mini">${checklist.map(item => `<span class="material-check-chip ${item.done ? 'done' : item.required ? 'missing' : 'optional'}">${item.done ? '✓' : item.required ? '!' : '○'} ${item.label}</span>`).join('')}</div>
           <div class="stages">${p.stages.map((stage, i) => `<div class="stage ${stage.status}"><span class="stage-index">${stage.status === 'done' ? '✓' : i + 1}</span><b>${stage.name}</b><span class="badge ${stage.status === 'active' ? 'clay' : stage.status === 'done' ? 'success' : ''}">${stage.status === 'done' ? 'Готово' : stage.status === 'active' ? 'В процессе' : 'Ожидает'}</span></div>`).join('')}</div>
-          <div class="production-actions"><button class="secondary-btn" data-action="production-materials" data-id="${p.id}">Материалы · ${productionUsage(p).length}</button>${p.progress < 100 ? `<button class="primary-btn" data-action="timer" data-id="${p.id}">${p.timerRunning ? 'Пауза' : 'Старт таймера'}</button><button class="secondary-btn" data-action="next-stage" data-id="${p.id}">Завершить этап</button>` : `<button class="primary-btn" data-action="prepare-shipment" data-id="${p.id}">Передать на склад / к отправке</button>`}<button class="secondary-btn" data-action="production-note" data-id="${p.id}">Заметка</button><button class="secondary-btn" data-action="client-status-by-rug" data-id="${p.id}">Статус клиенту</button>${p.isTest ? `<button class="danger-btn" data-action="delete-test-project" data-id="${p.projectId}">Удалить тест целиком</button>` : ''}</div>
+          <div class="production-actions"><button class="secondary-btn" data-action="production-materials" data-id="${p.id}">Материалы · ${productionUsage(p).length}</button>${p.progress < 100 ? `<button class="primary-btn" data-action="timer" data-id="${p.id}">${p.timerRunning ? 'Пауза' : 'Старт таймера'}</button><button class="secondary-btn" data-action="next-stage" data-id="${p.id}">Завершить этап</button>` : `<button class="primary-btn" data-action="prepare-shipment" data-id="${p.id}">Передать на склад / к отправке</button>`}<button class="secondary-btn" data-action="production-note" data-id="${p.id}">Заметка</button>${orderForProduction(p) ? `<button class="secondary-btn" data-action="client-status-by-rug" data-id="${p.id}">Статус клиенту</button>` : ''}${p.isTest ? `<button class="danger-btn" data-action="delete-test-project" data-id="${p.projectId}">Удалить тест целиком</button>` : ''}</div>
         </article>`;
       }).join('') : '<article class="card empty"><strong>Производство пусто</strong>Сначала создайте проект, затем запустите его в работу.</article>'}
     </section>`;
@@ -1588,7 +1623,7 @@ function renderOrderDetail(o) {
     <div class="detail-tile" style="margin-top:16px"><small>Пожелания клиента</small><div>${o.note || 'Нет дополнительных пожеланий'}</div></div>
     <div class="card-head" style="margin-top:18px"><h3>История общения</h3><small>${o.history.length} сообщений</small></div>
     <div class="timeline">${o.history.length ? o.history.map(h => `<div class="timeline-item"><span class="timeline-dot"></span><div class="timeline-text"><b>${h.who}</b> · ${h.date}<br>${h.text}</div></div>`).join('') : '<div class="empty"><strong>Переписка пока не добавлена</strong>Сохраняйте важные договорённости и сообщения.</div>'}</div>
-    <div class="production-actions"><button class="primary-btn" data-action="order-payment" data-id="${o.id}">＋ Оплата</button><button class="secondary-btn" data-action="client-status" data-id="${o.id}">Статус для клиента</button><button class="secondary-btn" data-action="order-status" data-id="${o.id}">Изменить статус</button><button class="secondary-btn" data-action="message-template" data-id="${o.id}">Шаблон сообщения</button>${o.isTest ? `<button class="danger-btn" data-action="delete-test-order" data-id="${o.id}">Удалить тест целиком</button>` : `<button class="secondary-btn" data-action="mark-test-order" data-id="${o.id}">Пометить как тест</button>`}<button class="danger-btn" data-action="delete-order" data-id="${o.id}">Удалить заказ</button></div>
+    <div class="production-actions">${productionForOrder(o) ? `<button class="primary-btn" data-action="open-order-production" data-id="${o.id}">Открыть производство</button>` : !['К отправке','Отправлен'].includes(o.status) ? `<button class="primary-btn" data-action="launch-order" data-id="${o.id}">Запустить заказ в работу</button>` : ''}<button class="secondary-btn" data-action="order-payment" data-id="${o.id}">＋ Оплата</button><button class="secondary-btn" data-action="client-status" data-id="${o.id}">Статус для клиента</button><button class="secondary-btn" data-action="order-status" data-id="${o.id}">Изменить статус</button><button class="secondary-btn" data-action="message-template" data-id="${o.id}">Шаблон сообщения</button>${o.isTest ? `<button class="danger-btn" data-action="delete-test-order" data-id="${o.id}">Удалить тест целиком</button>` : `<button class="secondary-btn" data-action="mark-test-order" data-id="${o.id}">Пометить как тест</button>`}<button class="danger-btn" data-action="delete-order" data-id="${o.id}">Удалить заказ</button></div>
   </article>`;
 }
 function renderProducts() {
@@ -1704,12 +1739,14 @@ function handleAction(action, id) {
     'edit-catalog-item': () => openCatalogEditor(id),
     'adjust-material': () => adjustMaterial(id),
     'start-production': openStartProduction,
+    'launch-order': () => launchOrder(id),
+    'open-order-production': () => openOrderProduction(id),
     'timer': () => toggleTimer(id),
     'next-stage': () => nextStage(id),
     'production-note': () => editProductionNote(id),
     'production-materials': () => openProductionMaterials(id),
     'client-status': () => openClientStatus(id),
-    'client-status-by-rug': () => { const p = state.productions.find(x => x.id === id); const o = state.orders.find(x => x.project === p?.name); if (o) openClientStatus(o.id); else toast('К этому ковру не привязан заказ'); },
+    'client-status-by-rug': () => { const p = state.productions.find(x => x.id === id); const o = orderForProduction(p); if (o) openClientStatus(o.id); else toast('Этот ковёр делается на склад и не привязан к клиенту'); },
     'order-status': () => changeOrderStatus(id),
     'order-payment': () => addOrderPayment(id),
     'message-template': () => openMessageTemplate(id),
@@ -1784,16 +1821,16 @@ function openProjectEditor(project = null) {
     };
     if (editing) {
       Object.assign(project, values);
-      state.orders.filter(item => item.projectId === project.id || item.project === oldName).forEach(item => { item.project = values.name; item.isTest = values.isTest; });
-      state.productions.filter(item => item.projectId === project.id || item.name === oldName).forEach(item => { item.name = values.name; item.isTest = values.isTest; });
-      state.products.filter(item => item.projectId === project.id || item.name === oldName).forEach(item => { item.name = values.name; item.isTest = values.isTest; });
+      state.orders.filter(item => item.projectId === project.id).forEach(item => { item.project = values.name; });
+      state.productions.filter(item => item.projectId === project.id).forEach(item => { item.name = values.name; if (item.sourceType === 'stock') item.isTest = values.isTest; });
+      state.products.filter(item => item.projectId === project.id && !item.orderId).forEach(item => { item.name = values.name; item.isTest = values.isTest; });
     } else state.projects.unshift({ id: `PRJ-${String(state.projects.length + 1).padStart(3,'0')}`, status: 'Идея', progress: 0, colors: [], ...values });
     markSaving(); closeModal(); state.view = 'projects'; render(); toast(editing ? 'Проект обновлён' : 'Проект создан');
   };
 }
 function openProject(id) {
   const p = state.projects.find(x => x.id === id); if (!p) return;
-  openModal(p.name, `<div class="status-hero"><div class="status-cover">${visual(p, `Проект ${p.name}`)}</div><div><div class="badge-group">${testBadge(p)}<span class="badge ${statusClass(p.status)}">${p.status}</span></div><h3 style="font-size:26px;margin:10px 0 5px">${esc(p.name)}</h3><div class="item-meta">${p.id} · ${esc(p.category)}</div><div class="price" style="margin-top:10px">${rub(p.price)}</div></div></div><div class="detail-grid" style="margin-top:18px"><div class="detail-tile"><small>Размер</small><b>${esc(p.size)}</b></div><div class="detail-tile"><small>Материал</small><b>${esc(p.material)}</b></div><div class="detail-tile"><small>Плановый срок</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Готовность</small><b>${p.progress}%</b></div></div><div style="margin-top:16px">${progress(p.progress)}</div>${p.colors?.length ? `<div class="detail-tile" style="margin-top:16px"><small>Палитра</small><div style="display:flex;gap:8px">${p.colors.map(c=>`<i style="width:34px;height:34px;border-radius:50%;background:${c};border:3px solid #fff;box-shadow:0 2px 7px #0002"></i>`).join('')}</div></div>` : ''}<div class="detail-tile" style="margin-top:12px"><small>Заметки</small>${esc(p.notes || 'Нет заметок')}</div>`, `${p.isTest ? '<button class="danger-btn" data-delete-test>Удалить тест целиком</button>' : '<button class="secondary-btn" data-mark-test>Пометить как тест</button>'}<button class="danger-btn" data-delete>Удалить проект</button><button class="secondary-btn" data-launch>Запустить в производство</button><button class="primary-btn" data-edit>Изменить</button>`);
+  openModal(p.name, `<div class="status-hero"><div class="status-cover">${visual(p, `Проект ${p.name}`)}</div><div><div class="badge-group">${testBadge(p)}<span class="badge ${statusClass(p.status)}">${p.status}</span></div><h3 style="font-size:26px;margin:10px 0 5px">${esc(p.name)}</h3><div class="item-meta">${p.id} · ${esc(p.category)}</div><div class="price" style="margin-top:10px">${rub(p.price)}</div></div></div><div class="detail-grid" style="margin-top:18px"><div class="detail-tile"><small>Размер</small><b>${esc(p.size)}</b></div><div class="detail-tile"><small>Материал</small><b>${esc(p.material)}</b></div><div class="detail-tile"><small>Плановый срок</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Готовность</small><b>${p.progress}%</b></div></div><div style="margin-top:16px">${progress(p.progress)}</div>${p.colors?.length ? `<div class="detail-tile" style="margin-top:16px"><small>Палитра</small><div style="display:flex;gap:8px">${p.colors.map(c=>`<i style="width:34px;height:34px;border-radius:50%;background:${c};border:3px solid #fff;box-shadow:0 2px 7px #0002"></i>`).join('')}</div></div>` : ''}<div class="detail-tile" style="margin-top:12px"><small>Заметки</small>${esc(p.notes || 'Нет заметок')}</div>`, `${p.isTest ? '<button class="danger-btn" data-delete-test>Удалить тест целиком</button>' : '<button class="secondary-btn" data-mark-test>Пометить как тест</button>'}<button class="danger-btn" data-delete>Удалить проект</button><button class="secondary-btn" data-launch>Запустить для склада</button><button class="primary-btn" data-edit>Изменить</button>`);
   modalRoot.querySelector('[data-delete-test]')?.addEventListener('click', () => { closeModal(); deleteTestChain(id, 'project'); });
   modalRoot.querySelector('[data-mark-test]')?.addEventListener('click', () => { closeModal(); markTestChain(id, 'project'); });
   modalRoot.querySelector('[data-delete]').onclick = () => { closeModal(); deleteProject(id); };
@@ -1823,6 +1860,9 @@ function deleteOrder(id) {
   const order = state.orders.find(item => item.id === id);
   if (!order) return;
   if (!confirm(`Удалить заказ ${order.id} клиента «${order.client}»?\n\nСвязанный проект и производственная карточка останутся. Это действие нельзя отменить.`)) return;
+  const linkedProduction = productionForOrder(order);
+  if (linkedProduction) { linkedProduction.orderId = ''; linkedProduction.sourceType = 'stock'; }
+  state.products.filter(item => item.orderId === id).forEach(item => { item.orderId = ''; if (item.inventoryStatus !== 'archive') item.inventoryStatus = 'stock'; });
   state.orders = state.orders.filter(item => item.id !== id);
   state.shipments = state.shipments.filter(item => item.orderId !== id);
   state.selectedOrderId = state.orders[0]?.id || null;
@@ -1833,27 +1873,40 @@ function deleteOrder(id) {
 }
 
 function testChainContext(id, type = 'project') {
-  const order = type === 'order' ? state.orders.find(item => item.id === id) : null;
-  const project = type === 'project'
-    ? state.projects.find(item => item.id === id)
-    : state.projects.find(item => item.id === order?.projectId) || state.projects.find(item => item.name === order?.project);
-  const projectId = project?.id || order?.projectId || '';
-  const projectName = project?.name || order?.project || '';
-  const orders = state.orders.filter(item => item.id === order?.id || (projectId && item.projectId === projectId) || (projectName && item.project === projectName));
-  const productions = state.productions.filter(item => (projectId && item.projectId === projectId) || (projectName && item.name === projectName));
+  if (type === 'order') {
+    const order = state.orders.find(item => item.id === id);
+    const production = productionForOrder(order);
+    const productions = production ? [production] : [];
+    const productionIds = new Set(productions.map(item => item.id));
+    const orders = order ? [order] : [];
+    const orderIds = new Set(orders.map(item => item.id));
+    const products = state.products.filter(item => orderIds.has(item.orderId) || productionIds.has(item.productionId));
+    const project = state.projects.find(item => item.id === order?.projectId) || null;
+    return { order, project, projectId: project?.id || '', projectName: order?.project || '', orders, productions, productionIds, orderIds, products, deleteProject: false };
+  }
+  const project = state.projects.find(item => item.id === id);
+  const projectId = project?.id || '';
+  const projectName = project?.name || '';
+  const productions = state.productions.filter(item => item.sourceType === 'stock' && ((projectId && item.projectId === projectId) || (!item.projectId && projectName && item.name === projectName)));
   const productionIds = new Set(productions.map(item => item.id));
-  const orderIds = new Set(orders.map(item => item.id));
-  const products = state.products.filter(item => orderIds.has(item.orderId) || productionIds.has(item.productionId) || (projectId && item.projectId === projectId));
-  return { order, project, projectId, projectName, orders, productions, productionIds, orderIds, products };
+  const orders = [];
+  const orderIds = new Set();
+  const products = state.products.filter(item => productionIds.has(item.productionId) && !item.orderId);
+  return { order: null, project, projectId, projectName, orders, productions, productionIds, orderIds, products, deleteProject: true };
 }
 
 function markTestChain(id, type = 'project') {
   const chain = testChainContext(id, type);
   if (!chain.project && !chain.order) return toast('Запись не найдена');
-  if (chain.project) chain.project.isTest = true;
-  chain.orders.forEach(item => { item.isTest = true; });
-  chain.productions.forEach(item => { item.isTest = true; });
-  chain.products.forEach(item => { item.isTest = true; });
+  if (type === 'order') {
+    chain.orders.forEach(item => { item.isTest = true; });
+    chain.productions.forEach(item => { item.isTest = true; });
+    chain.products.forEach(item => { item.isTest = true; });
+  } else {
+    if (chain.project) chain.project.isTest = true;
+    chain.productions.forEach(item => { item.isTest = true; });
+    chain.products.forEach(item => { item.isTest = true; });
+  }
   markSaving();
   render();
   toast('Метка «Тест» добавлена. Финансы, склад и аналитика продолжают считаться');
@@ -1866,7 +1919,7 @@ function deleteTestChain(id, type = 'project') {
   const label = chain.projectName || chain.order?.id || 'тест';
   const message = [
     `Удалить тест «${label}» целиком?`,
-    `Будут удалены: проект, ${chain.orders.length} заказ(а), ${chain.productions.length} производственная карточка и ${chain.products.length} готовое изделие.`,
+    chain.deleteProject ? `Будут удалены: проект, ${chain.productions.length} складская производственная карточка и ${chain.products.length} готовое изделие.` : `Будут удалены: заказ, ${chain.productions.length} производственная карточка и ${chain.products.length} готовое изделие. Связанный дизайн в «Проектах» сохранится.`,
     'Тестовые оплаты и связанные расходы исчезнут из финансов и аналитики.',
     'Списанные на тест материалы будут возвращены на склад.',
     'Это действие нельзя отменить.'
@@ -1886,7 +1939,7 @@ function deleteTestChain(id, type = 'project') {
 
   state.finance.transactions = (state.finance.transactions || []).filter(item => {
     if (chain.orderIds.has(item.orderId)) return false;
-    if (chain.projectId && item.projectId === chain.projectId) return false;
+    if (chain.deleteProject && chain.projectId && item.projectId === chain.projectId) return false;
     return true;
   });
   state.shipments = state.shipments.filter(item => !chain.orderIds.has(item.orderId));
@@ -1894,7 +1947,7 @@ function deleteTestChain(id, type = 'project') {
   state.products = state.products.filter(item => !productIds.has(item.id));
   state.productions = state.productions.filter(item => !chain.productionIds.has(item.id));
   state.orders = state.orders.filter(item => !chain.orderIds.has(item.id));
-  if (chain.projectId) state.projects = state.projects.filter(item => item.id !== chain.projectId);
+  if (chain.deleteProject && chain.projectId) state.projects = state.projects.filter(item => item.id !== chain.projectId);
 
   state.selectedOrderId = state.orders[0]?.id || null;
   markSaving();
@@ -1902,18 +1955,60 @@ function deleteTestChain(id, type = 'project') {
   render();
   toast('Тестовая цепочка удалена полностью');
 }
+function createProductionCard({ name, project = null, order = null, coverImage = '', pattern = null, planDays = 7, isTest = false }) {
+  const nextNumber = Math.max(48, ...state.productions.map(item => Number(String(item.id).split('-').at(-1)) || 0)) + 1;
+  return {
+    id: `RUG-${new Date().getFullYear()}-${String(nextNumber).padStart(4,'0')}`,
+    projectId: project?.id || order?.projectId || '', orderId: order?.id || '', sourceType: order ? 'order' : 'stock',
+    name, pattern: pattern || project?.pattern || order?.pattern || null,
+    coverImage: coverImage || order?.coverImage || project?.coverImage || '',
+    progress: 5, planDays: Number(planDays) || 7, elapsedDays: 0, cost: 0, materialCost: 0, extraCost: 0,
+    materialUsage: [], timerSeconds: 0, timerRunning: false,
+    stages: ['Эскиз','Перенос','Набивка','Проклейка','Сушка','Подложка','Стрижка','Контроль качества','Упаковка'].map((stageName,index)=>({name:stageName,status:index===0?'active':'wait'})),
+    notes: '', photos: 0, isTest: Boolean(isTest), handoffStatus: ''
+  };
+}
 function launchProject(projectId) {
   const project = state.projects.find(item => item.id === projectId); if (!project) return;
-  if (state.productions.some(item => item.projectId === projectId)) return toast('Этот проект уже в производстве');
-  state.productions.unshift({ id:`RUG-2026-${String(49+state.productions.length).padStart(4,'0')}`, projectId:project.id, name:project.name, pattern:project.pattern, coverImage:project.coverImage || '', progress:5, planDays:project.planDays, elapsedDays:0, cost:0, materialCost:0, extraCost:0, materialUsage:[], timerSeconds:0, timerRunning:false, stages:['Эскиз','Перенос','Набивка','Проклейка','Сушка','Подложка','Стрижка','Контроль качества','Упаковка'].map((name,index)=>({name,status:index===0?'active':'wait'})), notes:'', photos:0, isTest:Boolean(project.isTest), handoffStatus:'' });
+  const activeStockProduction = state.productions.find(item => item.projectId === projectId && item.sourceType === 'stock' && Number(item.progress) < 100);
+  if (activeStockProduction) return toast('Этот проект уже запущен для товарного склада');
+  const production = createProductionCard({ name: project.name, project, coverImage: project.coverImage, pattern: project.pattern, planDays: project.planDays, isTest: project.isTest });
+  state.productions.unshift(production);
   project.status='В работе'; project.progress=5;
-  state.orders.filter(order => order.projectId === project.id || order.project === project.name).forEach(order => { order.projectId = project.id; order.coverImage = project.coverImage || order.coverImage || ''; order.pattern = project.pattern || order.pattern; order.status = 'В работе'; order.progress = 5; order.isTest = Boolean(project.isTest || order.isTest); });
-  markSaving(); state.view='production'; render(); toast('Проект запущен в производство');
+  markSaving(); state.view='production'; render(); toast('Проект запущен для товарного склада');
+}
+function launchOrder(orderId) {
+  const order = state.orders.find(item => item.id === orderId); if (!order) return toast('Заказ не найден');
+  if (productionForOrder(order)) return toast('Этот заказ уже запущен в производство');
+  if (['К отправке','Отправлен'].includes(order.status)) return toast('Этот заказ уже завершён или передан к отправке');
+  const project = state.projects.find(item => item.id === order.projectId) || null;
+  const production = createProductionCard({
+    name: order.project, project, order, coverImage: order.coverImage, pattern: order.pattern,
+    planDays: project?.planDays || 7, isTest: Boolean(order.isTest || project?.isTest)
+  });
+  state.productions.unshift(production);
+  order.productionId = production.id;
+  order.status = 'В работе'; order.progress = 5;
+  order.coverImage = order.coverImage || project?.coverImage || '';
+  order.pattern = order.pattern || project?.pattern || null;
+  markSaving(); state.view='production'; render(); toast(`Заказ ${order.id} запущен в производство`);
+}
+function openOrderProduction(orderId) {
+  const order = state.orders.find(item => item.id === orderId);
+  const production = productionForOrder(order);
+  if (!production) return toast('У заказа ещё нет производственной карточки');
+  state.view = 'production';
+  markSaving(); render();
+  setTimeout(() => document.querySelector(`[data-timer="${production.id}"]`)?.closest('.production-card')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
 }
 function openStartProduction() {
-  const available = state.projects.filter(p => !state.productions.some(r=>r.projectId===p.id));
-  openModal('Запустить ковёр', available.length ? `<div class="list">${available.map(p=>`<button class="item-row" style="width:100%;text-align:left;border:1px solid var(--line)" data-launch-id="${p.id}"><div class="thumb">${visual(p, `Проект ${p.name}`)}</div><div><div class="item-title">${p.name}</div><div class="item-meta">${p.size} · ${p.status}</div></div><span>→</span></button>`).join('')}</div>` : '<div class="empty"><strong>Нет свободных проектов</strong>Создайте новый проект или завершите текущие.</div>');
-  modalRoot.querySelectorAll('[data-launch-id]').forEach(btn=>btn.onclick=()=>{closeModal();launchProject(btn.dataset.launchId);});
+  const availableOrders = state.orders.filter(order => !productionForOrder(order) && !['К отправке','Отправлен'].includes(order.status));
+  const availableProjects = state.projects.filter(project => !state.productions.some(item => item.projectId === project.id && item.sourceType === 'stock' && Number(item.progress) < 100));
+  const ordersHtml = availableOrders.length ? `<div class="start-production-group"><div class="card-head"><h3>Клиентские заказы</h3><small>${availableOrders.length}</small></div><div class="list">${availableOrders.map(order=>`<button class="item-row" style="width:100%;text-align:left;border:1px solid var(--line)" data-launch-order-id="${order.id}"><div class="thumb">${visualForOrder(order)}</div><div><div class="item-title">${order.id} · ${esc(order.client)}</div><div class="item-meta">${esc(order.project)} · ${esc(order.size)}</div></div><span>→</span></button>`).join('')}</div></div>` : `<div class="empty compact"><strong>Нет заказов к запуску</strong>Новые заказы появятся здесь автоматически.</div>`;
+  const projectsHtml = availableProjects.length ? `<div class="start-production-group"><div class="card-head"><h3>Проекты для склада</h3><small>${availableProjects.length}</small></div><div class="list">${availableProjects.map(project=>`<button class="item-row" style="width:100%;text-align:left;border:1px solid var(--line)" data-launch-project-id="${project.id}"><div class="thumb">${visual(project, `Проект ${project.name}`)}</div><div><div class="item-title">${esc(project.name)}</div><div class="item-meta">${esc(project.size)} · товарный склад</div></div><span>→</span></button>`).join('')}</div></div>` : `<div class="empty compact"><strong>Нет свободных проектов</strong>Создайте дизайн для товарного склада.</div>`;
+  openModal('Запустить ковёр', `<div class="start-production-sections">${ordersHtml}${projectsHtml}</div>`);
+  modalRoot.querySelectorAll('[data-launch-order-id]').forEach(btn=>btn.onclick=()=>{closeModal();launchOrder(btn.dataset.launchOrderId);});
+  modalRoot.querySelectorAll('[data-launch-project-id]').forEach(btn=>btn.onclick=()=>{closeModal();launchProject(btn.dataset.launchProjectId);});
 }
 function toggleTimer(id) {
   const p = state.productions.find(x=>x.id===id); if (!p) return;
@@ -1931,15 +2026,24 @@ function nextStage(id, skipMaterialCheck = false) {
   production.stages[active].status = 'done';
   if (active + 1 < production.stages.length) production.stages[active + 1].status = 'active';
   production.progress = Math.round(((active + 1) / production.stages.length) * 100);
-  const project = state.projects.find(item => item.id === production.projectId);
-  if (project) project.progress = production.progress;
-  state.orders.filter(order => order.projectId === production.projectId || order.project === production.name).forEach(order => { order.projectId = production.projectId; order.coverImage = production.coverImage || project?.coverImage || order.coverImage || ''; order.progress = production.progress; order.status = production.progress >= 100 ? 'Готов' : 'В работе'; order.isTest = Boolean(order.isTest || production.isTest || project?.isTest); });
+  const project = projectForProduction(production);
+  const linkedOrder = orderForProduction(production);
+  if (linkedOrder) {
+    linkedOrder.productionId = production.id;
+    linkedOrder.coverImage = production.coverImage || project?.coverImage || linkedOrder.coverImage || '';
+    linkedOrder.progress = production.progress;
+    linkedOrder.status = production.progress >= 100 ? 'Готов' : 'В работе';
+    linkedOrder.isTest = Boolean(linkedOrder.isTest || production.isTest || project?.isTest);
+  } else if (project) {
+    project.progress = production.progress;
+    project.status = production.progress >= 100 ? 'Готов' : 'В работе';
+  }
   if (active + 1 === production.stages.length) {
     production.progress = 100; production.timerRunning = false;
     recalcProductionCost(production);
     if (!state.products.some(item => item.id === production.id)) {
-      const linkedOrder = state.orders.find(order => order.projectId === production.projectId || order.project === production.name);
-      state.products.unshift(normalizeProduct({ id:production.id, productionId:production.id, projectId:production.projectId, orderId:linkedOrder?.id || '', name:production.name, pattern:production.pattern, coverImage:production.coverImage || project?.coverImage || '', size:project?.size || linkedOrder?.size || '', composition:project?.material || linkedOrder?.material || '', base:'Тафтинговая ткань', pile:'12 мм', care:'Сухая чистка', retail:project?.price || linkedOrder?.amount || 0, minimum:Math.round((project?.price || linkedOrder?.amount || 0) * .78), location:'Не назначено', status:'Готов к передаче', inventoryStatus:'stock', cost:Number(production.cost) || 0, channels:[], days:0, createdAt:todayISO(), isTest:Boolean(production.isTest || project?.isTest || linkedOrder?.isTest) }));
+      const linkedOrder = orderForProduction(production);
+      state.products.unshift(normalizeProduct({ id:production.id, productionId:production.id, projectId:production.projectId, orderId:linkedOrder?.id || '', name:production.name, pattern:production.pattern, coverImage:production.coverImage || linkedOrder?.coverImage || project?.coverImage || '', size:linkedOrder?.size || project?.size || '', composition:linkedOrder?.material || project?.material || '', base:'Тафтинговая ткань', pile:'12 мм', care:'Сухая чистка', retail:linkedOrder?.amount || project?.price || 0, minimum:Math.round((linkedOrder?.amount || project?.price || 0) * .78), location:'Не назначено', status:'Готов к передаче', inventoryStatus:'stock', cost:Number(production.cost) || 0, channels:[], days:0, createdAt:todayISO(), isTest:Boolean(production.isTest || project?.isTest || linkedOrder?.isTest) }));
     }
     production.completedAt = production.completedAt || todayISO();
   }
@@ -1962,15 +2066,15 @@ function editProductionNote(id) {
 
 function ensureProductForProduction(production) {
   if (!production) return null;
-  const project = state.projects.find(item => item.id === production.projectId) || state.projects.find(item => item.name === production.name);
-  const order = state.orders.find(item => item.projectId === production.projectId) || state.orders.find(item => item.project === production.name);
-  let product = state.products.find(item => item.productionId === production.id || item.id === production.id || (production.projectId && item.projectId === production.projectId));
+  const project = projectForProduction(production);
+  const order = orderForProduction(production);
+  let product = state.products.find(item => item.productionId === production.id || item.id === production.id);
   if (!product) {
     product = normalizeProduct({
       id: production.id, productionId: production.id, projectId: production.projectId || project?.id || '', orderId: order?.id || '',
-      name: production.name, pattern: production.pattern, coverImage: production.coverImage || project?.coverImage || '',
-      size: project?.size || order?.size || '', composition: project?.material || order?.material || '', base: 'Тафтинговая ткань', pile: '12 мм', care: 'Сухая чистка',
-      retail: project?.price || order?.amount || 0, minimum: Math.round((project?.price || order?.amount || 0) * .78), location: 'Не назначено',
+      name: production.name, pattern: production.pattern, coverImage: production.coverImage || order?.coverImage || project?.coverImage || '',
+      size: order?.size || project?.size || '', composition: order?.material || project?.material || '', base: 'Тафтинговая ткань', pile: '12 мм', care: 'Сухая чистка',
+      retail: order?.amount || project?.price || 0, minimum: Math.round((order?.amount || project?.price || 0) * .78), location: 'Не назначено',
       status: 'Готов к передаче', inventoryStatus: 'stock', cost: Number(production.cost) || 0, createdAt: production.completedAt || todayISO(),
       isTest: Boolean(production.isTest || project?.isTest || order?.isTest)
     });
@@ -1984,8 +2088,8 @@ function prepareForStockOrShipment(productionId) {
   const production = state.productions.find(item => item.id === productionId);
   if (!production) return toast('Производственная карточка не найдена');
   if (Number(production.progress) < 100) return toast('Сначала завершите все этапы производства');
-  const project = state.projects.find(item => item.id === production.projectId) || state.projects.find(item => item.name === production.name);
-  const order = state.orders.find(item => item.projectId === production.projectId) || state.orders.find(item => item.project === production.name);
+  const project = projectForProduction(production);
+  const order = orderForProduction(production);
   const product = ensureProductForProduction(production);
   if (!product) return;
 
@@ -2031,7 +2135,7 @@ function prepareForStockOrShipment(productionId) {
     product.location = fd.get('location').trim();
     product.packageNumber = fd.get('package').trim();
     production.handoffStatus = 'shipping';
-    if (project) { project.status = 'К отправке'; project.progress = 100; }
+    // Связанный проект остаётся шаблоном; к отправке переходит только конкретный заказ.
     let shipment = state.shipments.find(item => item.orderId === order.id);
     if (!shipment) { shipment = { id: `SHP-${Date.now()}`, orderId: order.id }; state.shipments.unshift(shipment); }
     Object.assign(shipment, { status: remaining > 0 ? 'Ожидает доплаты / отправки' : 'Готов к отправке', package: fd.get('package').trim(), location: fd.get('location').trim(), client: order.client, address: fd.get('address')?.trim() || order.city || 'Не указан', phone: fd.get('phone')?.trim() || order.phone || 'Не указан', note: fd.get('note') || '', tracking: shipment.tracking || '', isTest: Boolean(order.isTest) });
@@ -2363,7 +2467,7 @@ function openNewOrder() {
   openModal('Новый заказ', `<form id="orderForm" class="form-grid">
     <div class="field"><label>Клиент</label><input name="client" required></div><div class="field"><label>Телефон</label><input name="phone"></div>
     <div class="field"><label>Город</label><input name="city"></div><div class="field"><label>Источник</label><select name="source"><option>Авито</option><option>VK</option><option>Telegram</option><option>Рекомендация</option></select></div>
-    <div class="field full"><label>Связать с готовым проектом</label><select name="projectId" id="orderProjectSelect"><option value="">Без привязки — заполнить вручную</option>${projectOptions}</select></div>
+    <div class="field full"><label>Использовать дизайн из проектов</label><select name="projectId" id="orderProjectSelect"><option value="">Без проекта — заполнить заказ вручную</option>${projectOptions}</select><small>Проект используется как шаблон изображения, размера и цены. Сам заказ запускается в работу отдельно.</small></div>
     <div class="field"><label>Проект / название</label><input name="project" required></div><div class="field"><label>Размер</label><input name="size"></div>
     <div class="field"><label>Стоимость</label><input name="amount" type="number"></div><div class="field"><label>Предоплата</label><input name="prepaid" type="number"></div>
     <div class="field full"><label class="check-row"><input name="isTest" type="checkbox"><span><b>Тестовый заказ</b><small>Все оплаты, расходы, склад и аналитика считаются как обычно. Метка нужна только для быстрого удаления тестовых данных.</small></span></label></div>
@@ -2436,7 +2540,7 @@ function openMessageTemplate(id) {
 }
 function openClientStatus(id) {
   const o = state.orders.find(x => x.id === id); if (!o) return;
-  const production = state.productions.find(item => item.projectId === o.projectId) || state.productions.find(item => item.name === o.project);
+  const production = productionForOrder(o);
   const fallbackNames = ['Эскиз','Перенос','Набивка','Проклейка','Стрижка','Готово'];
   const stages = production?.stages?.length ? production.stages : fallbackNames.map((name, index) => ({ name, status: index < Math.floor(o.progress / (100 / fallbackNames.length)) ? 'done' : index === Math.floor(o.progress / (100 / fallbackNames.length)) ? 'active' : 'wait' }));
   const currentStage = stages.find(stage => stage.status === 'active')?.name || (o.progress >= 100 ? 'Готово' : o.status);
@@ -2459,7 +2563,7 @@ function openProduct(id) {
 }
 function openProductSale(id) {
   const product = state.products.find(item => item.id === id); if (!product) return;
-  const linkedOrder = state.orders.find(order => order.id === product.orderId) || state.orders.find(order => order.projectId && order.projectId === product.projectId);
+  const linkedOrder = state.orders.find(order => order.id === product.orderId);
   if (linkedOrder) {
     const balance = Math.max(0, (Number(linkedOrder.amount) || 0) - orderPaid(linkedOrder));
     openModal('Подготовить к отправке', `<div class="detail-tile"><small>Связанный заказ</small><b>${linkedOrder.id} · ${esc(linkedOrder.client)}</b><div class="item-meta">Остаток к оплате: ${rub(balance)}</div></div><div class="detail-tile" style="margin-top:12px"><small>Следующий шаг</small><div>Проверить оплату, назначить место хранения и номер упаковки. После передачи службе доставки потребуется трек-номер.</div></div>`, `<button class="secondary-btn" data-cancel>Отмена</button><button class="primary-btn" data-send>Передать к отправке</button>`);
@@ -2523,7 +2627,7 @@ function openExpense() {
     state.finance.transactions.unshift({ id: `EXP-${Date.now()}`, kind: 'expense', category: fd.get('category'), amount, date: fd.get('date') || todayISO(), title: fd.get('category'), note: fd.get('note') || '', projectId: project?.id || '', source: 'Ручной расход' });
     if (project) {
       const production = state.productions.find(item => item.projectId === project.id);
-      if (production) { production.extraCost = (Number(production.extraCost) || 0) + amount; production.cost = (Number(production.cost) || 0) + amount; const product = state.products.find(item => item.productionId === production.id || item.projectId === project.id); if (product) product.cost = production.cost; }
+      if (production) { production.extraCost = (Number(production.extraCost) || 0) + amount; production.cost = (Number(production.cost) || 0) + amount; const product = state.products.find(item => item.productionId === production.id); if (product) product.cost = production.cost; }
     }
     markSaving(); closeModal(); render(); toast(project ? 'Расход сохранён и добавлен в себестоимость' : 'Расход сохранён');
   };
