@@ -1,5 +1,5 @@
 const STORAGE_KEY = 'vors-studio-0.1.1';
-const APP_VERSION = '0.8.0';
+const APP_VERSION = '0.9.0';
 const CATALOG_CHECKED_AT = '05.08.2026';
 const CATALOG_SCOPE_NOTE = 'Варианты, опубликованные Куделем в таблицах товаров на дату проверки';
 
@@ -985,7 +985,7 @@ function reconcileLoadedState(merged) {
     const materialCost = Math.max(Number(item.materialCost) || 0, usageCost);
     const existingCost = Number(item.cost) || 0;
     const extraCost = Math.max(Number(item.extraCost) || 0, existingCost - materialCost, 0);
-    return { coverImage: '', orderId: '', sourceType: item.orderId ? 'order' : 'stock', completedAt: null, isTest: false, handoffStatus: '', ...item, materialUsage, materialCost, extraCost, cost: materialCost + extraCost };
+    return { coverImage: '', orderId: '', sourceType: item.orderId ? 'order' : 'stock', completedAt: null, isTest: false, handoffStatus: '', ...item, stages: normalizeProductionStages(item.stages, item.progress), qualityChecklist: item.qualityChecklist || {}, materialUsage, materialCost, extraCost, cost: materialCost + extraCost };
   });
 
   // Миграция старых производственных карточек: отделяем клиентские заказы от ковров «на склад».
@@ -1413,7 +1413,7 @@ function renderToday() {
 }
 function renderProjects() {
   return `
-    ${viewHeader('Проекты и коллекции', 'Дизайны для товарного склада и шаблоны, которые можно использовать в заказах.', `<button class="primary-btn" data-action="new-project">＋ Новый проект</button>`)}
+    ${viewHeader('Проекты и коллекции', 'Дизайны для товарного склада и шаблоны, которые можно использовать в заказах.', `<button class="secondary-btn" data-action="rug-calculator">Калькулятор ковра</button><button class="primary-btn" data-action="new-project">＋ Новый проект</button>`)}
     <div class="toolbar"><div class="search"><input id="projectSearch" placeholder="Поиск проектов" /></div><div class="chips" id="projectChips"><button class="chip active" data-filter="Все">Все</button>${[...new Set(state.projects.map(p => p.category))].map(c => `<button class="chip" data-filter="${c}">${c}</button>`).join('')}</div></div>
     <section class="project-grid" id="projectGrid">
       ${state.projects.length ? state.projects.map(projectCard).join('') : '<article class="card empty"><strong>Проектов пока нет</strong>Создайте первый дизайн и рассчитайте его стоимость.</article>'}
@@ -1428,6 +1428,152 @@ function projectCard(p) {
   </article>`;
 }
 
+
+const PRODUCTION_STAGE_FLOW = [
+  'Эскиз',
+  'Натяжка основы',
+  'Перенос',
+  'Набивка',
+  'Контроль до клея',
+  'Проклейка',
+  'Сушка',
+  'Снятие и край',
+  'Подложка',
+  'Twill tape',
+  'Стрижка',
+  'Carving',
+  'Контроль качества',
+  'Упаковка'
+];
+
+const QUALITY_CHECKS = [
+  'Поверхность выровнена',
+  'Границы и carving чистые',
+  'Нет торчащих нитей и пропусков',
+  'Waterfall edge выполнен аккуратно',
+  'Backing приклеен без пузырей и отслоений',
+  'Twill tape / кромка закрывает периметр',
+  'Ковёр пропылесошен и расчесан',
+  'Фактический размер проверен',
+  'Финальное фото сделано',
+  'Бирка и карточка ухода готовы'
+];
+
+const PRODUCTION_STAGE_GUIDES = {
+  'Эскиз': {
+    icon: '✎',
+    title: 'Подготовить рабочий эскиз',
+    tools: ['Эскиз', 'Размеры', 'Палитра'],
+    steps: ['Утвердите форму, размер и цвета.', 'Для текста, логотипов и асимметричных рисунков подготовьте зеркальную версию.', 'Проверьте, что все линии реально выполнить выбранной толщиной пряжи.'],
+    check: 'Есть финальный файл/рисунок, размер и понятная разбивка по цветам.'
+  },
+  'Натяжка основы': {
+    icon: '▦',
+    title: 'Натянуть первичную ткань',
+    tools: ['Рама', 'Тафтинговое полотно'],
+    steps: ['Натягивайте ткань равномерно по всему периметру.', 'Продольные и поперечные нити должны идти ровно, без диагонального перекоса.', 'Поверхность должна быть упругой, без провисаний и волн.'],
+    check: 'При нажатии ткань пружинит и возвращается, геометрия рамы не перекошена.'
+  },
+  'Перенос': {
+    icon: '⌁',
+    title: 'Перенести рисунок',
+    tools: ['Проектор', 'Маркер'],
+    steps: ['Выставьте проектор перпендикулярно полотну.', 'Перенесите основные контуры и границы цветов.', 'Подпишите сложные цветовые зоны, чтобы не перепутать их при набивке.'],
+    check: 'Все ключевые линии читаются, зеркальность проверена.'
+  },
+  'Набивка': {
+    icon: '⚙',
+    title: 'Набить ковёр',
+    tools: ['Тафтинг-пистолет', 'Пряжа', 'Ножницы'],
+    steps: ['Проверьте пистолет на тестовом участке.', 'Сначала задайте контуры цветовых блоков.', 'Заполняйте зоны параллельными проходами с одинаковой плотностью.', 'Периодически смотрите лицевую сторону.'],
+    check: 'Нет крупных пропусков, наложенных строк и явно разной плотности.'
+  },
+  'Контроль до клея': {
+    icon: '⌕',
+    title: 'Исправить всё, пока ещё можно',
+    tools: ['Пинцет', 'Ножницы', 'Дополнительная пряжа'],
+    steps: ['Проверьте лицо при обычном и боковом свете.', 'Уберите ошибочный цвет, петли и длинные нити.', 'Добейте пропуски и слабые зоны до фиксации клеем.'],
+    check: 'После клея ничего критичного исправлять уже не придётся.'
+  },
+  'Проклейка': {
+    icon: '▰',
+    title: 'Зафиксировать ворс',
+    tools: ['Клей / латекс', 'Шпатель', 'Перчатки'],
+    steps: ['Ковёр остаётся на раме.', 'Нанесите клей равномерно на изнанку, связывая основание ворса.', 'Не заливайте настолько сильно, чтобы состав прошёл на лицо.'],
+    check: 'Вся набитая площадь покрыта равномерно, края не пропущены.'
+  },
+  'Сушка': {
+    icon: '◷',
+    title: 'Полностью высушить на раме',
+    tools: ['Время', 'Вентиляция'],
+    steps: ['Не снимайте ковёр с рамы мокрым.', 'Дождитесь полного схватывания по всей толщине.', 'Не ускоряйте сушку сильным перегревом.'],
+    check: 'Клей сухой не только сверху, изделие держит геометрию.'
+  },
+  'Снятие и край': {
+    icon: '✂',
+    title: 'Снять и сделать waterfall edge',
+    tools: ['Ножницы', 'Клей'],
+    steps: ['Снимите высохший ковёр с рамы.', 'Оставьте примерно 3–5 см первичной ткани по периметру.', 'На изгибах сделайте разгрузочные надрезы, не доходя до ворса.', 'Заверните запас ткани на изнанку и зафиксируйте.'],
+    check: 'Край лежит ровно, без грубых складок и видимой первичной ткани с лица.'
+  },
+  'Подложка': {
+    icon: '▱',
+    title: 'Приклеить backing / антислип',
+    tools: ['Подложка', 'Клей', 'Ножницы'],
+    steps: ['Вырежьте backing немного меньше внешнего контура.', 'Ориентир — 5–10 мм внутрь, чтобы подложка не выглядывала.', 'Особенно тщательно проклейте углы и фигурные выступы.'],
+    check: 'Backing прилегает без пузырей и не торчит с лицевой стороны.'
+  },
+  'Twill tape': {
+    icon: '◎',
+    title: 'Закрыть периметр лентой',
+    tools: ['Twill tape / кромка', 'Клей'],
+    steps: ['Уложите ленту по периметру изнанки.', 'Закройте стык backing и завернутой первичной ткани.', 'На радиусах ведите ленту без грубых складок и натяжения.'],
+    check: 'Изнанка выглядит законченной, край нигде не раскрывается.'
+  },
+  'Стрижка': {
+    icon: '▤',
+    title: 'Выровнять плоскость',
+    tools: ['Триммер', 'Направляющая', 'Боковой свет'],
+    steps: ['Снимайте понемногу, длинными плавными проходами.', 'Работайте в нескольких направлениях.', 'Боковой свет покажет бугры, которые сверху почти не видны.'],
+    check: 'Поверхность визуально ровная, без ям и отдельных высоких островков.'
+  },
+  'Carving': {
+    icon: '∨',
+    title: 'Сформировать границы',
+    tools: ['Триммер', 'Ножницы'],
+    steps: ['Сначала полностью выровняйте ковёр.', 'Разведите ворс по границе цветов.', 'Снимайте под углом с обеих сторон, формируя мягкую V-образную канавку.', 'После carving сделайте только лёгкую доводку плоскости.'],
+    check: 'Границы читаются чисто, но не выглядят как глубокие траншеи.'
+  },
+  'Контроль качества': {
+    icon: '✓',
+    title: 'Финальный контроль VORS',
+    tools: ['Пылесос', 'Щётка', 'Рулетка', 'Камера'],
+    steps: ['Пропылесосьте и расчешите ворс.', 'Проверьте лицо боковым светом.', 'Осмотрите backing, кромку и все радиусы.', 'Пройдите обязательный чек-лист ниже.'],
+    check: 'Все пункты чек-листа отмечены.'
+  },
+  'Упаковка': {
+    icon: '□',
+    title: 'Подготовить изделие к хранению или отправке',
+    tools: ['Бирка', 'Карточка ухода', 'Упаковка'],
+    steps: ['Сделайте финальные фото до упаковки.', 'Добавьте бирку и карточку ухода.', 'Не заламывайте ковёр; небольшие фигурные можно паковать плоско.', 'Зафиксируйте место хранения и номер упаковки.'],
+    check: 'Ковёр защищён от влаги, грязи и заломов, маркировка на месте.'
+  }
+};
+
+function normalizeProductionStages(stages = [], progress = 0) {
+  const names = Array.isArray(stages) ? stages.map(stage => stage?.name).filter(Boolean) : [];
+  const alreadyNew = PRODUCTION_STAGE_FLOW.every(name => names.includes(name));
+  if (alreadyNew) return stages.map(stage => ({ photo: '', ...stage }));
+
+  const pct = Math.max(0, Math.min(100, Number(progress) || 0));
+  const doneCount = pct >= 100 ? PRODUCTION_STAGE_FLOW.length : Math.floor((pct / 100) * PRODUCTION_STAGE_FLOW.length);
+  return PRODUCTION_STAGE_FLOW.map((name, index) => ({
+    name,
+    status: index < doneCount ? 'done' : index === doneCount ? 'active' : 'wait',
+    photo: ''
+  }));
+}
+
 const PRODUCTION_MATERIAL_REQUIREMENTS = {
   'Набивка': [
     { label: 'Пряжа', types: ['Пряжа'] },
@@ -1435,6 +1581,7 @@ const PRODUCTION_MATERIAL_REQUIREMENTS = {
   ],
   'Проклейка': [{ label: 'Клей / латекс', types: ['Клей'] }],
   'Подложка': [{ label: 'Финишная подложка', types: ['Подложка'] }],
+  'Twill tape': [{ label: 'Twill tape / кромка', types: ['Кромка'] }],
   'Упаковка': [{ label: 'Упаковка', types: ['Упаковка'] }]
 };
 
@@ -1462,7 +1609,7 @@ function overallMaterialChecklist(production) {
     { label: 'Тафтинговое полотно', types: ['Основа'], required: true },
     { label: 'Клей / латекс', types: ['Клей'], required: true },
     { label: 'Подложка', types: ['Подложка'], required: true },
-    { label: 'Кромка', types: ['Кромка'], required: false },
+    { label: 'Twill tape / кромка', types: ['Кромка'], required: true },
     { label: 'Упаковка', types: ['Упаковка'], required: true }
   ];
   return items.map(item => ({ ...item, done: usageHasTypes(production, item.types) }));
@@ -1489,7 +1636,7 @@ function renderProduction() {
           <div class="grid cols-4 production-kpis" style="margin-top:14px"><div class="detail-tile"><small>План</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Факт</small><b>${p.elapsedDays} дней</b></div><div class="detail-tile"><small>Материалы</small><b>${rub(p.materialCost || 0)}</b><span>${productionUsage(p).length} поз.</span></div><div class="detail-tile"><small>Себестоимость</small><b>${rub(p.cost)}</b><span>${requiredReady ? 'Основное учтено' : 'Есть пропуски'}</span></div></div>
           <div class="material-check-mini">${checklist.map(item => `<span class="material-check-chip ${item.done ? 'done' : item.required ? 'missing' : 'optional'}">${item.done ? '✓' : item.required ? '!' : '○'} ${item.label}</span>`).join('')}</div>
           <div class="stages">${p.stages.map((stage, i) => `<div class="stage ${stage.status}"><span class="stage-index">${stage.status === 'done' ? '✓' : i + 1}</span><b>${stage.name}</b><span class="badge ${stage.status === 'active' ? 'clay' : stage.status === 'done' ? 'success' : ''}">${stage.status === 'done' ? 'Готово' : stage.status === 'active' ? 'В процессе' : 'Ожидает'}</span></div>`).join('')}</div>
-          <div class="production-actions"><button class="secondary-btn" data-action="production-materials" data-id="${p.id}">Материалы · ${productionUsage(p).length}</button>${p.progress < 100 ? `<button class="primary-btn" data-action="timer" data-id="${p.id}">${p.timerRunning ? 'Пауза' : 'Старт таймера'}</button><button class="secondary-btn" data-action="next-stage" data-id="${p.id}">Завершить этап</button>` : `<button class="primary-btn" data-action="prepare-shipment" data-id="${p.id}">Передать на склад / к отправке</button>`}<button class="secondary-btn" data-action="production-note" data-id="${p.id}">Заметка</button>${orderForProduction(p) ? `<button class="secondary-btn" data-action="client-status-by-rug" data-id="${p.id}">Статус клиенту</button>` : ''}${p.isTest ? `<button class="danger-btn" data-action="delete-test-project" data-id="${p.projectId}">Удалить тест целиком</button>` : ''}</div>
+          <div class="production-actions"><button class="secondary-btn" data-action="stage-guide" data-id="${p.id}">Как выполнить этап</button><button class="secondary-btn" data-action="production-materials" data-id="${p.id}">Материалы · ${productionUsage(p).length}</button>${p.progress < 100 ? `<button class="primary-btn" data-action="timer" data-id="${p.id}">${p.timerRunning ? 'Пауза' : 'Старт таймера'}</button><button class="secondary-btn" data-action="next-stage" data-id="${p.id}">Завершить этап</button>` : `<button class="primary-btn" data-action="prepare-shipment" data-id="${p.id}">Передать на склад / к отправке</button>`}<button class="secondary-btn" data-action="production-note" data-id="${p.id}">Заметка</button>${orderForProduction(p) ? `<button class="secondary-btn" data-action="client-status-by-rug" data-id="${p.id}">Статус клиенту</button>` : ''}${p.isTest ? `<button class="danger-btn" data-action="delete-test-project" data-id="${p.projectId}">Удалить тест целиком</button>` : ''}</div>
         </article>`;
       }).join('') : '<article class="card empty"><strong>Производство пусто</strong>Сначала создайте проект, затем запустите его в работу.</article>'}
     </section>`;
@@ -1682,7 +1829,7 @@ function renderFamily() {
 function renderMore() {
   const lineCount = new Set(state.materialCatalog.filter(item => item.system && item.type === 'Пряжа').map(item => item.line)).size;
   const consumableCount = state.materialCatalog.filter(item => item.system && item.type !== 'Пряжа').length;
-  return `${viewHeader('Ещё', 'Все дополнительные разделы VORS Studio.', '')}<div class="mobile-more"><button class="nav-item" data-go="orders"><span>▣</span><b>Клиенты и заказы</b></button><button class="nav-item" data-go="products"><span>◇</span><b>Готовые изделия</b></button><button class="nav-item" data-go="finance"><span>▥</span><b>Финансы и аналитика</b></button><button class="nav-item" data-go="family"><span>♧</span><b>Семейный режим</b></button><button class="nav-item" data-action="role"><span>👤</span><b>Сменить роль</b></button><button class="nav-item danger-action" data-action="clear-data"><span>⌫</span><b>Очистить рабочие данные</b></button></div><article class="card card-pad app-version-card"><div><small>VORS Studio</small><b>Версия ${APP_VERSION}</b><span>Библиотека: ${lineCount} линеек пряжи · ${consumableCount} расходников</span></div><div><small>Пряжа Куделя</small><b>${CATALOG_CHECKED_AT}</b><span>Вся библиотека сохраняется при очистке</span></div></article>`;
+  return `${viewHeader('Ещё', 'Все дополнительные разделы VORS Studio.', '')}<div class="mobile-more"><button class="nav-item" data-go="orders"><span>▣</span><b>Клиенты и заказы</b></button><button class="nav-item" data-go="products"><span>◇</span><b>Готовые изделия</b></button><button class="nav-item" data-go="finance"><span>▥</span><b>Финансы и аналитика</b></button><button class="nav-item" data-go="family"><span>♧</span><b>Семейный режим</b></button><button class="nav-item" data-action="role"><span>👤</span><b>Сменить роль</b></button><button class="nav-item" data-action="rug-calculator"><span>∑</span><b>Калькулятор ковра</b></button><button class="nav-item" data-action="export-backup"><span>⇩</span><b>Экспорт резервной копии</b></button><button class="nav-item" data-action="import-backup"><span>⇧</span><b>Импорт резервной копии</b></button><button class="nav-item danger-action" data-action="clear-data"><span>⌫</span><b>Очистить рабочие данные</b></button></div><article class="card card-pad app-version-card"><div><small>VORS Studio</small><b>Версия ${APP_VERSION}</b><span>Библиотека: ${lineCount} линеек пряжи · ${consumableCount} расходников</span></div><div><small>Пряжа Куделя</small><b>${CATALOG_CHECKED_AT}</b><span>Вся библиотека сохраняется при очистке</span></div></article>`;
 }
 
 function bindViewEvents() {
@@ -1745,6 +1892,10 @@ function handleAction(action, id) {
     'next-stage': () => nextStage(id),
     'production-note': () => editProductionNote(id),
     'production-materials': () => openProductionMaterials(id),
+    'stage-guide': () => openStageGuide(id),
+    'rug-calculator': () => openRugCalculator(id || null),
+    'export-backup': exportBackup,
+    'import-backup': openImportBackup,
     'client-status': () => openClientStatus(id),
     'client-status-by-rug': () => { const p = state.productions.find(x => x.id === id); const o = orderForProduction(p); if (o) openClientStatus(o.id); else toast('Этот ковёр делается на склад и не привязан к клиенту'); },
     'order-status': () => changeOrderStatus(id),
@@ -1830,10 +1981,11 @@ function openProjectEditor(project = null) {
 }
 function openProject(id) {
   const p = state.projects.find(x => x.id === id); if (!p) return;
-  openModal(p.name, `<div class="status-hero"><div class="status-cover">${visual(p, `Проект ${p.name}`)}</div><div><div class="badge-group">${testBadge(p)}<span class="badge ${statusClass(p.status)}">${p.status}</span></div><h3 style="font-size:26px;margin:10px 0 5px">${esc(p.name)}</h3><div class="item-meta">${p.id} · ${esc(p.category)}</div><div class="price" style="margin-top:10px">${rub(p.price)}</div></div></div><div class="detail-grid" style="margin-top:18px"><div class="detail-tile"><small>Размер</small><b>${esc(p.size)}</b></div><div class="detail-tile"><small>Материал</small><b>${esc(p.material)}</b></div><div class="detail-tile"><small>Плановый срок</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Готовность</small><b>${p.progress}%</b></div></div><div style="margin-top:16px">${progress(p.progress)}</div>${p.colors?.length ? `<div class="detail-tile" style="margin-top:16px"><small>Палитра</small><div style="display:flex;gap:8px">${p.colors.map(c=>`<i style="width:34px;height:34px;border-radius:50%;background:${c};border:3px solid #fff;box-shadow:0 2px 7px #0002"></i>`).join('')}</div></div>` : ''}<div class="detail-tile" style="margin-top:12px"><small>Заметки</small>${esc(p.notes || 'Нет заметок')}</div>`, `${p.isTest ? '<button class="danger-btn" data-delete-test>Удалить тест целиком</button>' : '<button class="secondary-btn" data-mark-test>Пометить как тест</button>'}<button class="danger-btn" data-delete>Удалить проект</button><button class="secondary-btn" data-launch>Запустить для склада</button><button class="primary-btn" data-edit>Изменить</button>`);
+  openModal(p.name, `<div class="status-hero"><div class="status-cover">${visual(p, `Проект ${p.name}`)}</div><div><div class="badge-group">${testBadge(p)}<span class="badge ${statusClass(p.status)}">${p.status}</span></div><h3 style="font-size:26px;margin:10px 0 5px">${esc(p.name)}</h3><div class="item-meta">${p.id} · ${esc(p.category)}</div><div class="price" style="margin-top:10px">${rub(p.price)}</div></div></div><div class="detail-grid" style="margin-top:18px"><div class="detail-tile"><small>Размер</small><b>${esc(p.size)}</b></div><div class="detail-tile"><small>Материал</small><b>${esc(p.material)}</b></div><div class="detail-tile"><small>Плановый срок</small><b>${p.planDays} дней</b></div><div class="detail-tile"><small>Готовность</small><b>${p.progress}%</b></div></div><div style="margin-top:16px">${progress(p.progress)}</div>${p.colors?.length ? `<div class="detail-tile" style="margin-top:16px"><small>Палитра</small><div style="display:flex;gap:8px">${p.colors.map(c=>`<i style="width:34px;height:34px;border-radius:50%;background:${c};border:3px solid #fff;box-shadow:0 2px 7px #0002"></i>`).join('')}</div></div>` : ''}<div class="detail-tile" style="margin-top:12px"><small>Заметки</small>${esc(p.notes || 'Нет заметок')}</div>`, `${p.isTest ? '<button class="danger-btn" data-delete-test>Удалить тест целиком</button>' : '<button class="secondary-btn" data-mark-test>Пометить как тест</button>'}<button class="danger-btn" data-delete>Удалить проект</button><button class="secondary-btn" data-estimate>Смета и закупка</button><button class="secondary-btn" data-launch>Запустить для склада</button><button class="primary-btn" data-edit>Изменить</button>`);
   modalRoot.querySelector('[data-delete-test]')?.addEventListener('click', () => { closeModal(); deleteTestChain(id, 'project'); });
   modalRoot.querySelector('[data-mark-test]')?.addEventListener('click', () => { closeModal(); markTestChain(id, 'project'); });
   modalRoot.querySelector('[data-delete]').onclick = () => { closeModal(); deleteProject(id); };
+  modalRoot.querySelector('[data-estimate]').onclick = () => { closeModal(); openRugCalculator(id); };
   modalRoot.querySelector('[data-launch]').onclick = () => { closeModal(); launchProject(id); };
   modalRoot.querySelector('[data-edit]').onclick = () => { closeModal(); openProjectEditor(p); };
 }
@@ -1964,7 +2116,8 @@ function createProductionCard({ name, project = null, order = null, coverImage =
     coverImage: coverImage || order?.coverImage || project?.coverImage || '',
     progress: 5, planDays: Number(planDays) || 7, elapsedDays: 0, cost: 0, materialCost: 0, extraCost: 0,
     materialUsage: [], timerSeconds: 0, timerRunning: false,
-    stages: ['Эскиз','Перенос','Набивка','Проклейка','Сушка','Подложка','Стрижка','Контроль качества','Упаковка'].map((stageName,index)=>({name:stageName,status:index===0?'active':'wait'})),
+    stages: PRODUCTION_STAGE_FLOW.map((stageName,index)=>({name:stageName,status:index===0?'active':'wait',photo:''})),
+    qualityChecklist: {},
     notes: '', photos: 0, isTest: Boolean(isTest), handoffStatus: ''
   };
 }
@@ -2020,6 +2173,9 @@ function nextStage(id, skipMaterialCheck = false) {
   const active = production.stages.findIndex(stage => stage.status === 'active');
   if (active < 0) return toast('Все этапы уже завершены');
   const stageName = production.stages[active].name;
+  if (stageName === 'Контроль качества' && !QUALITY_CHECKS.every(item => production.qualityChecklist?.[item])) {
+    return openQualityChecklist(production);
+  }
   const missing = missingMaterialsForStage(production, stageName);
   if (!skipMaterialCheck && missing.length) return openStageMaterialCheck(production, stageName, missing);
 
@@ -2650,6 +2806,264 @@ function shipOrder(id) {
     markSaving(); closeModal(); state.view = 'products'; state.productView = 'archive'; render(); toast('Заказ отправлен и перенесён в завершённые');
   };
 }
+
+function parseProjectSize(size = '') {
+  const match = String(size).replace(',', '.').match(/(\d+(?:\.\d+)?)\s*[xх×*]\s*(\d+(?:\.\d+)?)/i);
+  return match ? { width: Number(match[1]), height: Number(match[2]) } : { width: 80, height: 120 };
+}
+
+function stockForEstimate(types, targetUnit) {
+  const convert = (value, unit) => {
+    const n = Number(value) || 0;
+    if (targetUnit === 'г') {
+      if (unit === 'кг') return n * 1000;
+      if (unit === 'г') return n;
+    }
+    if (targetUnit === 'кг') {
+      if (unit === 'г') return n / 1000;
+      if (unit === 'кг') return n;
+    }
+    if (targetUnit === 'м²' && unit === 'м²') return n;
+    if (targetUnit === 'м' && unit === 'м') return n;
+    if (targetUnit === 'шт' && unit === 'шт') return n;
+    return 0;
+  };
+  return state.materials.filter(item => types.includes(item.type)).reduce((sum, item) => sum + convert(item.stock, item.unit), 0);
+}
+
+function projectEstimateDefaults(project = null) {
+  const size = parseProjectSize(project?.size || '');
+  const saved = project?.estimate || {};
+  const yarnStock = state.materials.filter(item => item.type === 'Пряжа' && Number(item.pricePerUnit) > 0);
+  const avgYarnPerGram = yarnStock.length ? yarnStock.reduce((sum,item)=>sum + Number(item.pricePerUnit || 0),0) / yarnStock.length : 1.47;
+  return {
+    width: saved.width || size.width,
+    height: saved.height || size.height,
+    yarnKgM2: saved.yarnKgM2 || 2.2,
+    reservePct: saved.reservePct ?? 10,
+    yarnPrice100: saved.yarnPrice100 || Math.round(avgYarnPerGram * 100),
+    basePerM2: saved.basePerM2 || 207,
+    baseReservePct: saved.baseReservePct ?? 15,
+    glueKgM2: saved.glueKgM2 || 0.8,
+    gluePerKg: saved.gluePerKg || 1000,
+    backingPerM2: saved.backingPerM2 || 350,
+    tapePerM: saved.tapePerM || 50,
+    packaging: saved.packaging || 500,
+    laborHours: saved.laborHours || Math.max(4, Math.round((size.width * size.height / 10000) * 8 * 2) / 2),
+    hourlyRate: saved.hourlyRate || 600,
+    salesFeePct: saved.salesFeePct || 0,
+    targetMarginPct: saved.targetMarginPct || 45
+  };
+}
+
+function openRugCalculator(projectId = null) {
+  const project = projectId ? state.projects.find(item => item.id === projectId) : null;
+  const d = projectEstimateDefaults(project);
+  openModal(project ? `Смета · ${project.name}` : 'Калькулятор ковра', `
+    <form id="rugCalcForm" class="form-grid">
+      <div class="field"><label>Ширина, см</label><input name="width" type="number" min="10" step="1" value="${d.width}"></div>
+      <div class="field"><label>Высота, см</label><input name="height" type="number" min="10" step="1" value="${d.height}"></div>
+      <div class="field"><label>Расход пряжи, кг/м²</label><input name="yarnKgM2" type="number" min=".1" step=".05" value="${d.yarnKgM2}"></div>
+      <div class="field"><label>Технологический запас пряжи, %</label><input name="reservePct" type="number" min="0" step="1" value="${d.reservePct}"></div>
+      <div class="field"><label>Цена пряжи, ₽ / 100 г</label><input name="yarnPrice100" type="number" min="0" step="1" value="${d.yarnPrice100}"></div>
+      <div class="field"><label>Первичная ткань, ₽ / м²</label><input name="basePerM2" type="number" min="0" step="1" value="${d.basePerM2}"></div>
+      <div class="field"><label>Запас первичной ткани, %</label><input name="baseReservePct" type="number" min="0" step="1" value="${d.baseReservePct}"></div>
+      <div class="field"><label>Клей, кг / м²</label><input name="glueKgM2" type="number" min="0" step=".05" value="${d.glueKgM2}"></div>
+      <div class="field"><label>Клей, ₽ / кг</label><input name="gluePerKg" type="number" min="0" step="1" value="${d.gluePerKg}"></div>
+      <div class="field"><label>Backing, ₽ / м²</label><input name="backingPerM2" type="number" min="0" step="1" value="${d.backingPerM2}"></div>
+      <div class="field"><label>Twill tape, ₽ / м</label><input name="tapePerM" type="number" min="0" step="1" value="${d.tapePerM}"></div>
+      <div class="field"><label>Упаковка, ₽</label><input name="packaging" type="number" min="0" step="1" value="${d.packaging}"></div>
+      <div class="field"><label>Работа, часов</label><input name="laborHours" type="number" min="0" step=".5" value="${d.laborHours}"></div>
+      <div class="field"><label>Стоимость часа, ₽</label><input name="hourlyRate" type="number" min="0" step="50" value="${d.hourlyRate}"></div>
+      <div class="field"><label>Комиссии продажи, %</label><input name="salesFeePct" type="number" min="0" max="50" step=".5" value="${d.salesFeePct}"></div>
+      <div class="field"><label>Целевая маржа, %</label><input name="targetMarginPct" type="number" min="1" max="80" step="1" value="${d.targetMarginPct}"></div>
+    </form>
+    <div id="rugCalcResult" class="calc-result"></div>
+  `, `<button class="secondary-btn" data-cancel>Закрыть</button>${project ? '<button class="primary-btn" data-apply>Сохранить смету и цену</button>' : ''}`);
+
+  const form = document.getElementById('rugCalcForm');
+  const result = document.getElementById('rugCalcResult');
+  let latest = null;
+  const read = () => Object.fromEntries([...new FormData(form).entries()].map(([k,v]) => [k, Number(v) || 0]));
+  const update = () => {
+    const v = read();
+    const area = (v.width * v.height) / 10000;
+    const yarnKg = area * v.yarnKgM2 * (1 + v.reservePct / 100);
+    const yarnCost = yarnKg * v.yarnPrice100 * 10;
+    const baseArea = area * (1 + v.baseReservePct / 100);
+    const baseCost = baseArea * v.basePerM2;
+    const glueKg = area * v.glueKgM2;
+    const glueCost = glueKg * v.gluePerKg;
+    const backingArea = area * 1.05;
+    const backingCost = backingArea * v.backingPerM2;
+    const perimeter = 2 * (v.width + v.height) / 100;
+    const tapeCost = perimeter * v.tapePerM;
+    const materialCost = yarnCost + baseCost + glueCost + backingCost + tapeCost + v.packaging;
+    const laborCost = v.laborHours * v.hourlyRate;
+    const fullCost = materialCost + laborCost;
+    const denominator = Math.max(.1, 1 - (v.targetMarginPct + v.salesFeePct) / 100);
+    const retail = Math.ceil((fullCost / denominator) / 100) * 100;
+    const fee = retail * v.salesFeePct / 100;
+    const profit = retail - fullCost - fee;
+
+    const needs = [
+      { label:'Пряжа (общий вес)', need:yarnKg*1000, unit:'г', stock:stockForEstimate(['Пряжа'],'г') },
+      { label:'Тафтинговое полотно', need:baseArea, unit:'м²', stock:stockForEstimate(['Основа'],'м²') },
+      { label:'Клей / латекс', need:glueKg, unit:'кг', stock:stockForEstimate(['Клей'],'кг') },
+      { label:'Backing / подложка', need:backingArea, unit:'м²', stock:stockForEstimate(['Подложка'],'м²') },
+      { label:'Twill tape / кромка', need:perimeter, unit:'м', stock:stockForEstimate(['Кромка'],'м') },
+      { label:'Упаковка', need:1, unit:'шт', stock:stockForEstimate(['Упаковка'],'шт') }
+    ];
+    latest = { ...v, area, yarnKg, baseArea, glueKg, backingArea, perimeter, yarnCost, baseCost, glueCost, backingCost, tapeCost, materialCost, laborCost, fullCost, retail, fee, profit };
+    result.innerHTML = `
+      <section class="calc-kpis">
+        <div class="detail-tile"><small>Площадь</small><b>${num(area,2)} м²</b></div>
+        <div class="detail-tile"><small>Материалы</small><b>${rub(materialCost)}</b></div>
+        <div class="detail-tile"><small>Работа</small><b>${rub(laborCost)}</b></div>
+        <div class="detail-tile"><small>Полная себестоимость</small><b>${rub(fullCost)}</b></div>
+        <div class="detail-tile accent"><small>Рекомендованная цена</small><b>${rub(retail)}</b></div>
+        <div class="detail-tile"><small>Прибыль после комиссии</small><b>${rub(profit)}</b></div>
+      </section>
+      <div class="calc-breakdown">
+        <div><span>Пряжа · ${num(yarnKg,2)} кг</span><b>${rub(yarnCost)}</b></div>
+        <div><span>Первичная ткань · ${num(baseArea,2)} м²</span><b>${rub(baseCost)}</b></div>
+        <div><span>Клей · ${num(glueKg,2)} кг</span><b>${rub(glueCost)}</b></div>
+        <div><span>Backing · ${num(backingArea,2)} м²</span><b>${rub(backingCost)}</b></div>
+        <div><span>Twill tape · ${num(perimeter,2)} м</span><b>${rub(tapeCost)}</b></div>
+        <div><span>Упаковка</span><b>${rub(v.packaging)}</b></div>
+      </div>
+      <div class="card-head" style="margin-top:16px"><h3>Что докупить</h3><small>по текущему складу</small></div>
+      <div class="shopping-checklist">${needs.map(item => {
+        const deficit = Math.max(0, item.need - item.stock);
+        return `<div class="shopping-row ${deficit > .001 ? 'missing' : 'ready'}"><span>${deficit > .001 ? '!' : '✓'}</span><div><b>${item.label}</b><small>Нужно ${num(item.need, item.unit==='г'||item.unit==='шт'?0:2)} ${item.unit} · есть ${num(item.stock, item.unit==='г'||item.unit==='шт'?0:2)} ${item.unit}</small></div><strong>${deficit > .001 ? 'докупить '+num(deficit,item.unit==='г'||item.unit==='шт'?0:2)+' '+item.unit : 'хватает'}</strong></div>`;
+      }).join('')}</div>
+      <div class="calc-note">Пряжа сравнивается по общему весу. Для многоцветного ковра дополнительно проверьте остаток каждого конкретного оттенка.</div>
+    `;
+  };
+  form.addEventListener('input', update);
+  update();
+  modalRoot.querySelector('[data-cancel]').onclick = closeModal;
+  modalRoot.querySelector('[data-apply]')?.addEventListener('click', () => {
+    if (!project || !latest) return;
+    project.estimate = latest;
+    project.price = latest.retail;
+    project.size = `${Math.round(latest.width)} × ${Math.round(latest.height)} см`;
+    markSaving();
+    closeModal();
+    state.view = 'projects';
+    render();
+    toast('Смета сохранена · плановая цена обновлена');
+  });
+}
+
+function openQualityChecklist(production) {
+  production.qualityChecklist = production.qualityChecklist || {};
+  openModal('Контроль качества · ' + production.name, `
+    <div class="quality-list">${QUALITY_CHECKS.map(item => `<label class="check-row"><input type="checkbox" data-quality="${esc(item)}" ${production.qualityChecklist[item] ? 'checked' : ''}><span><b>${esc(item)}</b></span></label>`).join('')}</div>
+  `, '<button class="secondary-btn" data-cancel>Закрыть</button><button class="primary-btn" data-done>Сохранить</button>');
+  modalRoot.querySelectorAll('[data-quality]').forEach(input => input.addEventListener('change', () => {
+    production.qualityChecklist[input.dataset.quality] = input.checked;
+  }));
+  modalRoot.querySelector('[data-cancel]').onclick = closeModal;
+  modalRoot.querySelector('[data-done]').onclick = () => {
+    markSaving();
+    const ready = QUALITY_CHECKS.every(item => production.qualityChecklist[item]);
+    closeModal();
+    render();
+    toast(ready ? 'Контроль качества пройден' : 'Чек-лист сохранён, но ещё не завершён');
+  };
+}
+
+function stageGuideDiagram(stageName) {
+  const diagrams = {
+    'Натяжка основы': '<div class="guide-diagram"><div class="frame-diagram"><i></i><span>↕</span><b>РАВНОМЕРНОЕ НАТЯЖЕНИЕ</b></div></div>',
+    'Проклейка': '<div class="guide-diagram layer-diagram"><span class="layer yarn">ворс</span><span class="layer base">основа</span><span class="layer glue">клей наносится на изнанку</span></div>',
+    'Снятие и край': '<div class="guide-diagram edge-diagram"><div class="pile-lines">||||||||||||</div><div class="edge-base"></div><div class="edge-fold">↘ завернуть 3–5 см ↙</div></div>',
+    'Подложка': '<div class="guide-diagram layer-diagram"><span class="layer yarn">ворс</span><span class="layer base">первичная ткань</span><span class="layer glue">клей</span><span class="layer backing">backing / антислип</span></div>',
+    'Twill tape': '<div class="guide-diagram tape-diagram"><div class="backing-block">BACKING</div><div class="tape-line">TWILL TAPE ПО ПЕРИМЕТРУ</div></div>',
+    'Carving': '<div class="guide-diagram carving-diagram"><span>A</span><b>\ /</b><span>B</span><small>мягкая V-образная граница</small></div>'
+  };
+  return diagrams[stageName] || '';
+}
+
+function openStageGuide(productionId) {
+  const production = state.productions.find(item => item.id === productionId);
+  if (!production) return;
+  const stage = production.stages.find(item => item.status === 'active') || production.stages.at(-1);
+  const guide = PRODUCTION_STAGE_GUIDES[stage?.name] || { icon:'i', title:stage?.name || 'Этап', tools:[], steps:[], check:'' };
+  openModal(`${guide.icon} ${stage?.name || 'Этап'}`, `
+    <div class="stage-guide">
+      <div class="stage-guide-hero"><div><small>Сейчас выполняется</small><h2>${esc(guide.title)}</h2></div><span class="stage-guide-icon">${guide.icon}</span></div>
+      ${stageGuideDiagram(stage?.name)}
+      <div class="stage-guide-tools">${guide.tools.map(item=>`<span>${esc(item)}</span>`).join('')}</div>
+      <ol class="stage-guide-steps">${guide.steps.map(item=>`<li>${esc(item)}</li>`).join('')}</ol>
+      <div class="stage-guide-check"><b>Перед завершением этапа</b><span>${esc(guide.check)}</span></div>
+      <div class="stage-photo-box">
+        <div class="card-head"><h3>Фото этапа</h3><small>сжимается для офлайн-хранения</small></div>
+        <div id="stagePhotoPreview">${stage.photo ? `<img src="${stage.photo}" alt="Фото этапа">` : '<div class="visual-placeholder"><span>＋</span><small>Можно сохранить одно контрольное фото</small></div>'}</div>
+        <div class="image-upload-actions"><label class="secondary-btn file-button">Добавить фото<input id="stagePhotoInput" type="file" accept="image/*" hidden></label>${stage.photo ? '<button class="ghost-btn" data-remove-stage-photo>Удалить</button>' : ''}</div>
+      </div>
+      ${stage?.name === 'Контроль качества' ? '<button class="primary-btn" data-quality-open style="width:100%;margin-top:12px">Открыть чек-лист качества</button>' : ''}
+    </div>
+  `, '<button class="secondary-btn" data-cancel>Закрыть</button>');
+  modalRoot.querySelector('[data-cancel]').onclick = closeModal;
+  modalRoot.querySelector('[data-quality-open]')?.addEventListener('click',()=>{ closeModal(); openQualityChecklist(production); });
+  const input = document.getElementById('stagePhotoInput');
+  input?.addEventListener('change', async () => {
+    const file = input.files?.[0]; if (!file) return;
+    try {
+      stage.photo = await compressImage(file, 720, .58);
+      markSaving();
+      const preview = document.getElementById('stagePhotoPreview');
+      if (preview) preview.innerHTML = `<img src="${stage.photo}" alt="Фото этапа">`;
+      toast('Фото этапа сохранено');
+    } catch (error) { toast(error.message || 'Не удалось сохранить фото'); }
+  });
+  modalRoot.querySelector('[data-remove-stage-photo]')?.addEventListener('click',()=>{ stage.photo=''; markSaving(); closeModal(); openStageGuide(productionId); });
+}
+
+function exportBackup() {
+  const payload = { vorsStudioBackup: 1, version: APP_VERSION, exportedAt: new Date().toISOString(), state };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `VORS-backup-${todayISO()}.json`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast('Резервная копия подготовлена');
+}
+
+function openImportBackup() {
+  openModal('Импорт резервной копии', `
+    <div class="clear-warning"><b>Импорт заменит текущие рабочие данные.</b><p>Перед импортом лучше сначала сделать экспорт текущего состояния.</p></div>
+    <div class="image-upload" style="margin-top:14px"><label class="secondary-btn file-button">Выбрать VORS-backup.json<input id="backupInput" type="file" accept=".json,application/json" hidden></label><div id="backupInfo" class="item-meta">Файл ещё не выбран</div></div>
+  `, '<button class="secondary-btn" data-cancel>Отмена</button><button class="primary-btn" data-import disabled>Импортировать</button>');
+  let imported = null;
+  const input = document.getElementById('backupInput');
+  const info = document.getElementById('backupInfo');
+  const button = modalRoot.querySelector('[data-import]');
+  modalRoot.querySelector('[data-cancel]').onclick = closeModal;
+  input.onchange = async () => {
+    try {
+      const raw = await input.files?.[0]?.text();
+      const parsed = JSON.parse(raw || '');
+      if (!parsed?.vorsStudioBackup || !parsed.state) throw new Error('Это не резервная копия VORS Studio');
+      imported = parsed;
+      info.textContent = `Версия ${parsed.version || '—'} · экспорт ${parsed.exportedAt ? new Date(parsed.exportedAt).toLocaleString('ru-RU') : '—'}`;
+      button.disabled = false;
+    } catch (error) {
+      imported = null; button.disabled = true; info.textContent = error.message || 'Не удалось прочитать файл';
+    }
+  };
+  button.onclick = () => {
+    if (!imported) return;
+    const preservedCatalog = mergeCatalog(imported.state.materialCatalog || MATERIAL_CATALOG_SEED);
+    state = reconcileLoadedState({ ...clone(EMPTY_STATE), ...imported.state, materialCatalog: preservedCatalog });
+    saveState(); closeModal(); render(); toast('Резервная копия восстановлена');
+  };
+}
+
 function openRoleModal(){const roles=[['owner','Владелец','Полный доступ'],['manager','Менеджер','Клиенты, заказы, публикации'],['family','Семейный режим','Только упаковка и отправка']];openModal('Режим работы',`<div class="list">${roles.map(([key,name,desc])=>`<button class="item-row" style="width:100%;text-align:left" data-role="${key}"><span style="font-size:25px">${key==='owner'?'👤':key==='manager'?'💬':'📦'}</span><div><div class="item-title">${name}</div><div class="item-meta">${desc}</div></div>${state.role===key?'<span class="badge success">Выбран</span>':'<span>→</span>'}</button>`).join('')}</div>`);modalRoot.querySelectorAll('[data-role]').forEach(btn=>btn.onclick=()=>{state.role=btn.dataset.role;state.view=state.role==='family'?'family':'today';markSaving();closeModal();render();toast('Режим изменён');});}
 
 function clearAllData() {
