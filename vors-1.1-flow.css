@@ -1,0 +1,55 @@
+/* VORS Studio 1.1 — понятная логика: дизайн → для клиента / на продажу → производство */
+.flow-explainer { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:-12px 0 28px; color:var(--muted); font-size:11px; font-weight:700; letter-spacing:.02em; }
+.flow-explainer span { padding:7px 10px; border:1px solid var(--line); border-radius:999px; background:rgba(255,255,255,.25); }
+.flow-explainer i { font-style:normal; color:var(--ink); }
+.flow-or { border:0 !important; background:transparent !important; padding:0 !important; font-weight:500 !important; color:var(--muted); }
+.flow-design-label { position:absolute; top:12px; left:12px; z-index:2; padding:6px 8px; border-radius:999px; background:rgba(17,17,15,.72); color:#fff; font-size:9px; font-weight:800; letter-spacing:.12em; backdrop-filter:blur(8px); }
+.flow-design-card .v1-project-overlay { display:none; }
+.flow-design-modal h3 { margin:8px 0 4px; font-family:ui-serif,Georgia,serif; font-size:32px; font-weight:400; }
+.flow-design-modal .price { margin-top:12px; font-family:ui-serif,Georgia,serif; font-size:28px; }
+.flow-design-details { margin-top:18px; }
+.flow-design-help { margin-top:18px; padding:13px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); color:var(--muted); font-size:12px; line-height:1.55; }
+.flow-color-row { display:flex; gap:8px; margin-top:8px; }
+.flow-color-row i { width:32px; height:32px; border-radius:50%; border:1px solid rgba(17,17,15,.12); }
+.flow-start-copy, .flow-picker-head { margin-bottom:22px; }
+.flow-start-copy h3, .flow-picker-head h3 { margin:4px 0 8px; font-family:ui-serif,Georgia,serif; font-size:32px; font-weight:400; line-height:1.05; }
+.flow-start-copy p, .flow-picker-head p { margin:0; color:var(--muted); line-height:1.55; }
+.flow-choice-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.flow-choice { min-height:178px; padding:20px; display:grid; grid-template-columns:auto 1fr auto; align-items:end; gap:14px; border:1px solid var(--line); border-radius:14px; background:transparent; color:var(--ink); text-align:left; cursor:pointer; transition:transform .16s ease, background .16s ease, border-color .16s ease; }
+.flow-choice:hover { transform:translateY(-2px); border-color:rgba(17,17,15,.35); background:rgba(17,17,15,.035); }
+.flow-choice-no { align-self:start; color:var(--muted); font-size:10px; letter-spacing:.12em; }
+.flow-choice b { display:block; margin-bottom:8px; font-family:ui-serif,Georgia,serif; font-size:28px; font-weight:400; }
+.flow-choice small { display:block; max-width:290px; color:var(--muted); font-size:11px; line-height:1.5; }
+.flow-choice > strong { font-size:22px; font-weight:400; }
+.flow-picker-list { display:grid; gap:0; }
+.flow-pick-row { width:100%; display:grid; grid-template-columns:56px 1fr auto; gap:12px; align-items:center; padding:12px 0; border:0; border-bottom:1px solid var(--line); background:transparent; text-align:left; cursor:pointer; }
+.flow-pick-row b { display:block; font-size:13px; }
+.flow-pick-row span { display:block; margin-top:4px; color:var(--muted); font-size:10px; }
+.flow-pick-row > strong { font-size:18px; font-weight:400; }
+.flow-picker-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; }
+.flow-pick-design { overflow:hidden; padding:0; border:1px solid var(--line); border-radius:12px; background:transparent; text-align:left; cursor:pointer; }
+.flow-pick-design > div { height:150px; overflow:hidden; background:#ddd; }
+.flow-pick-design img, .flow-pick-design .pattern { width:100%; height:100%; object-fit:cover; }
+.flow-pick-design > span { display:block; padding:11px 11px 2px; font-size:13px; font-weight:750; }
+.flow-pick-design > small { display:block; padding:0 11px 11px; color:var(--muted); font-size:10px; }
+.flow-purpose-badge { position:absolute; z-index:3; top:14px; left:14px; padding:7px 9px; border-radius:999px; background:rgba(17,17,15,.72); color:#fff; font-size:9px; font-weight:850; letter-spacing:.1em; backdrop-filter:blur(8px); }
+.flow-workbench.is-client .flow-purpose-badge { background:rgba(17,17,15,.78); }
+.flow-workbench.is-sale .flow-purpose-badge { background:rgba(84,79,70,.78); }
+.flow-explainer-production { margin-top:-18px; }
+.v1-completed-note { margin-top:28px; padding-top:18px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+
+@media (max-width:820px) {
+  .flow-explainer { margin:-8px 0 20px; overflow-x:auto; flex-wrap:nowrap; padding-bottom:2px; }
+  .flow-explainer span, .flow-explainer i { flex:0 0 auto; }
+  .flow-choice-grid { grid-template-columns:1fr; }
+  .flow-choice { min-height:144px; }
+  .flow-picker-grid { grid-template-columns:1fr 1fr; }
+  .flow-pick-design > div { height:128px; }
+}
+@media (max-width:430px) {
+  .flow-picker-grid { grid-template-columns:1fr; }
+  .flow-pick-design { display:grid; grid-template-columns:110px 1fr; align-items:center; }
+  .flow-pick-design > div { grid-row:1 / span 2; height:105px; }
+  .flow-pick-design > span { padding:12px 10px 2px; }
+  .flow-pick-design > small { padding:0 10px 12px; }
+}
