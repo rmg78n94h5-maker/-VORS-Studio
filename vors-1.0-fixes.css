@@ -1,0 +1,12 @@
+/* Small responsive fixes layered after VORS 1.0 */
+.v1-danger-row { color:var(--danger); }
+.v1-danger-row .v1-more-icon { color:var(--danger); font-size:20px; }
+.v1-maintenance-list { margin-top:42px; }
+
+@media (max-width:620px) {
+  .vors-v1 .material-row > div:nth-of-type(3),
+  .vors-v1 .material-row > div:nth-of-type(4) { display:none; }
+  .vors-v1 .catalog-row .row-actions { display:flex !important; }
+  .vors-v1 .catalog-row { grid-template-columns:38px minmax(0,1fr) auto; }
+  .vors-v1 .catalog-row .row-actions .icon-mini { display:none; }
+}
