@@ -1,0 +1,50 @@
+/* VORS Studio 0.9.1 — фильтры библиотеки и визуальная палитра */
+.catalog-control-card { display:grid; gap:13px; margin-bottom:16px; }
+.catalog-control-top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.catalog-layout-switch { display:flex; gap:7px; flex-wrap:wrap; }
+.catalog-layout-switch .chip { min-height:38px; }
+.catalog-fit-chips { gap:7px; }
+.catalog-searchbar { margin:0; align-items:center; }
+.availability-toggle { display:inline-flex; align-items:center; gap:9px; min-height:38px; padding:8px 12px; border:1px solid var(--line); border-radius:13px; background:rgba(255,255,255,.55); color:var(--muted); font-size:12px; font-weight:700; cursor:pointer; }
+.availability-toggle input { width:18px; height:18px; accent-color:var(--clay); }
+.fit-hidden, .availability-hidden { display:none !important; }
+
+.palette-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; }
+.palette-card { overflow:hidden; border:1px solid var(--line); border-radius:20px; background:var(--surface); box-shadow:var(--shadow-soft); }
+.palette-swatch { position:relative; height:124px; background:var(--swatch); }
+.palette-swatch::after { content:""; position:absolute; inset:0; background:linear-gradient(180deg,rgba(255,255,255,.10),rgba(0,0,0,.06)); pointer-events:none; }
+.palette-swatch span { position:absolute; z-index:1; left:12px; bottom:10px; min-width:34px; padding:5px 8px; border-radius:999px; color:#fff; background:rgba(20,22,22,.62); backdrop-filter:blur(10px); font-size:11px; font-weight:800; text-align:center; }
+.palette-card-body { display:grid; gap:8px; padding:13px; }
+.palette-title { font-size:15px; font-weight:800; line-height:1.2; }
+.palette-line { color:var(--muted); font-size:12px; }
+.palette-meta { display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.availability-dot { display:inline-flex; align-items:center; gap:5px; color:var(--muted); font-size:10px; font-weight:700; }
+.availability-dot::before { content:""; width:7px; height:7px; border-radius:50%; background:#a9aaa7; }
+.availability-dot.ready { color:var(--success); }
+.availability-dot.ready::before { background:var(--success); }
+.palette-codes { min-height:30px; color:var(--muted); font-size:10px; line-height:1.45; }
+.palette-footer { display:flex; align-items:center; justify-content:space-between; gap:8px; padding-top:4px; border-top:1px solid var(--line); }
+.palette-footer > span { color:var(--muted); font-size:10px; }
+.palette-footer .secondary-btn { min-height:34px; padding:7px 9px; font-size:11px; }
+
+@media (max-width:1180px) { .palette-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width:820px) {
+  .palette-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .catalog-control-top { align-items:stretch; }
+  .catalog-layout-switch { width:100%; }
+  .catalog-layout-switch .chip { flex:1; }
+  .availability-toggle { width:100%; justify-content:center; }
+  .catalog-fit-chips { flex-wrap:nowrap; overflow-x:auto; padding-bottom:2px; }
+  .catalog-fit-chips .chip { flex:0 0 auto; }
+  .catalog-searchbar { display:grid; gap:10px; }
+}
+@media (max-width:430px) {
+  .palette-grid { grid-template-columns:1fr 1fr; gap:9px; }
+  .palette-swatch { height:96px; }
+  .palette-card-body { padding:10px; gap:6px; }
+  .palette-title { font-size:13px; }
+  .palette-line { font-size:10px; }
+  .palette-codes { font-size:9px; }
+  .palette-footer { display:grid; align-items:stretch; }
+  .palette-footer .secondary-btn { width:100%; }
+}
