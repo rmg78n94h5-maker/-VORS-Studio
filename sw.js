@@ -1,12 +1,14 @@
-const CACHE = 'vors-studio-v0.9.1-material-palette';
+const CACHE = 'vors-studio-v1.0.0-ui';
 const ASSETS = [
   './',
   './index.html',
   './styles.css',
   './materials-ui-0.9.1.css',
+  './vors-1.0.css',
   './app.js',
   './catalog-kudel-2026-09.js',
   './materials-ui-0.9.1.js',
+  './vors-1.0-ui.js',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
