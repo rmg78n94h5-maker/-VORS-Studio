@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+<BaseLayout title="Для бизнеса — VORS STUDIO" description="Кастомные ковры VORS для бизнеса и пространств.">
+  <Header />
+  <main class="biz-page">
+    <section class="biz-hero shell">
+      <span class="eyebrow eyebrow-light">VORS ДЛЯ БИЗНЕСА</span>
+      <h1>Ковёр как часть<br />фирменного пространства.</h1>
+      <p>Логотипы, графика, нестандартные формы и небольшие серии для кафе, салонов, магазинов, студий, офисов и событий.</p>
+      <a class="button button-light" href="/custom/">Обсудить проект</a>
+    </section>
+
+    <section class="shell use-grid">
+      <article><span>01</span><h2>Логотип и айдентика</h2><p>Переносим фирменную графику в физический объект, который работает внутри пространства.</p></article>
+      <article><span>02</span><h2>Нестандартные формы</h2><p>Круг, контур, знак, символ или форма под конкретную зону.</p></article>
+      <article><span>03</span><h2>Небольшие серии</h2><p>Несколько изделий по одному дизайну для сети, события или подарочной задачи.</p></article>
+    </section>
+
+    <section class="shell biz-process">
+      <div><span class="eyebrow">КАК РАБОТАЕМ</span><h2>Без лишней бюрократии.</h2></div>
+      <ol>
+        <li><strong>Задача</strong><span>Получаем брендбук, логотип или описание идеи.</span></li>
+        <li><strong>Предложение</strong><span>Подбираем размер, материалы, технологию и считаем стоимость.</span></li>
+        <li><strong>Производство</strong><span>Согласовываем макет и запускаем работу.</span></li>
+        <li><strong>Доставка</strong><span>Упаковываем и отправляем готовый проект.</span></li>
+      </ol>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>
+<style>
+.biz-page{background:#26231f;color:#f5f0e7;padding-top:6rem}.biz-hero{padding-top:7rem;padding-bottom:8rem}.biz-hero h1{font-size:clamp(3.7rem,7.5vw,7.4rem);line-height:.92;letter-spacing:-.055em;margin:.6rem 0 1.8rem;max-width:1100px}.biz-hero p{max-width:700px;font-size:1.12rem;line-height:1.7;color:#c8c0b4;margin-bottom:2rem}.use-grid{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid rgba(255,255,255,.16);border-bottom:1px solid rgba(255,255,255,.16)}.use-grid article{padding:3rem 2rem;border-right:1px solid rgba(255,255,255,.16)}.use-grid article:last-child{border-right:0}.use-grid span{font-size:.78rem;color:#a89f92}.use-grid h2{font-size:1.55rem;margin:4rem 0 1rem}.use-grid p{line-height:1.65;color:#bdb4a8}.biz-process{display:grid;grid-template-columns:.8fr 1.2fr;gap:5rem;padding-top:8rem;padding-bottom:8rem}.biz-process h2{font-size:clamp(2.7rem,5vw,5rem);letter-spacing:-.05em;margin:.5rem 0}.biz-process ol{list-style:none;padding:0;margin:0}.biz-process li{display:grid;grid-template-columns:180px 1fr;gap:2rem;padding:1.4rem 0;border-bottom:1px solid rgba(255,255,255,.14)}.biz-process li span{color:#bdb4a8;line-height:1.6}.biz-page :global(.site-footer){background:#1d1b18;color:#f5f0e7}
+@media(max-width:760px){.biz-page{padding-top:4rem}.biz-hero{padding-top:4rem;padding-bottom:5rem}.use-grid{grid-template-columns:1fr}.use-grid article{border-right:0;border-bottom:1px solid rgba(255,255,255,.16)}.use-grid h2{margin-top:2rem}.biz-process{grid-template-columns:1fr;gap:2rem;padding-top:5rem;padding-bottom:5rem}.biz-process li{grid-template-columns:1fr;gap:.45rem}}
+</style>
