@@ -1,0 +1,54 @@
+<header class="site-header" data-header>
+  <div class="shell header-inner">
+    <a class="brand" href="#top" aria-label="VORS Studio — на главную">
+      <span class="brand-main">VORS</span>
+      <span class="brand-sub">STUDIO</span>
+    </a>
+
+    <nav class="desktop-nav" aria-label="Основная навигация">
+      <a href="#catalog">Коллекция</a>
+      <a href="#custom">Индивидуальный заказ</a>
+      <a href="#process">Процесс</a>
+      <a href="#business">Для бизнеса</a>
+      <a href="#about">О студии</a>
+    </nav>
+
+    <a class="header-cta" href="#custom">Создать ковёр</a>
+
+    <button class="menu-button" type="button" aria-label="Открыть меню" aria-expanded="false" data-menu-button>
+      <span></span><span></span>
+    </button>
+  </div>
+
+  <div class="mobile-menu" data-mobile-menu>
+    <nav class="shell" aria-label="Мобильная навигация">
+      <a href="#catalog">Коллекция</a>
+      <a href="#custom">Индивидуальный заказ</a>
+      <a href="#process">Процесс</a>
+      <a href="#business">Для бизнеса</a>
+      <a href="#about">О студии</a>
+      <a class="mobile-menu-cta" href="#custom">Создать свой VORS</a>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const button = document.querySelector('[data-menu-button]');
+  const menu = document.querySelector('[data-mobile-menu]');
+  const header = document.querySelector('[data-header]');
+
+  if (button && menu && header) {
+    const close = () => {
+      header.classList.remove('menu-open');
+      button.setAttribute('aria-expanded', 'false');
+    };
+
+    button.addEventListener('click', () => {
+      const next = !header.classList.contains('menu-open');
+      header.classList.toggle('menu-open', next);
+      button.setAttribute('aria-expanded', String(next));
+    });
+
+    menu.querySelectorAll('a').forEach((link) => link.addEventListener('click', close));
+  }
+</script>
