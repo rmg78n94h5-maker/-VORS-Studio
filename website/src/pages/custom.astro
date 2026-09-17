@@ -1,0 +1,46 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import RugVisual from '../components/RugVisual.astro';
+---
+<BaseLayout title="Индивидуальный заказ — VORS STUDIO" description="Создание ковра VORS по вашей идее.">
+  <Header />
+  <main class="custom-page">
+    <section class="custom-hero shell">
+      <div class="copy">
+        <span class="eyebrow">ИНДИВИДУАЛЬНЫЙ ЗАКАЗ</span>
+        <h1>Ваш замысел.<br />Наше ремесло.</h1>
+        <p>Не нужен готовый макет. Можно прийти с рисунком, логотипом, фотографией, сочетанием цветов или просто идеей.</p>
+        <a class="button button-dark" href="#brief">Рассказать об идее</a>
+      </div>
+      <div class="visual"><RugVisual variant="sand" label="Индивидуальный ковёр VORS" /></div>
+    </section>
+
+    <section class="shell brief" id="brief">
+      <div>
+        <span class="eyebrow">БРИФ</span>
+        <h2>С чего начнём</h2>
+        <p>Эта форма пока демонстрационная. После подключения Supabase она будет создавать заявку прямо в приложении VORS.</p>
+      </div>
+      <form onsubmit="return false">
+        <label>Что хотите сделать?<textarea placeholder="Например: круглый ковёр 90 см, спокойные оттенки, рисунок пришлю отдельно"></textarea></label>
+        <div class="two"><label>Примерный размер<input placeholder="Например 80 × 120 см" /></label><label>Бюджет<input placeholder="Например до 20 000 ₽" /></label></div>
+        <label>Как с вами связаться?<input placeholder="Telegram / MAX / телефон" /></label>
+        <button class="button button-dark" type="button" disabled>Отправить заявку</button>
+        <small>На этапе прототипа ничего никуда не отправляется.</small>
+      </form>
+    </section>
+
+    <section class="steps shell">
+      <article><span>01</span><h3>Идея</h3><p>Вы описываете задачу и присылаете референс, если он есть.</p></article>
+      <article><span>02</span><h3>Макет</h3><p>Согласуем форму, цвета, размер и стоимость.</p></article>
+      <article><span>03</span><h3>Работа</h3><p>После согласования запускаем производство и открываем страницу заказа.</p></article>
+    </section>
+  </main>
+  <Footer />
+</BaseLayout>
+<style>
+.custom-page{padding-top:6rem}.custom-hero{min-height:78vh;display:grid;grid-template-columns:1.05fr .95fr;gap:4rem;align-items:center;padding-top:4rem;padding-bottom:6rem}.custom-hero h1{font-size:clamp(3.6rem,7vw,7rem);line-height:.93;letter-spacing:-.055em;margin:.5rem 0 1.5rem}.custom-hero p{max-width:590px;font-size:1.12rem;line-height:1.7;color:var(--muted);margin-bottom:2rem}.visual{min-height:520px;display:flex;align-items:center;justify-content:center;background:#e8e0d2;border-radius:2rem;padding:3rem}.brief{display:grid;grid-template-columns:.8fr 1.2fr;gap:5rem;padding-top:7rem;padding-bottom:7rem;border-top:1px solid rgba(31,29,25,.12)}.brief h2{font-size:clamp(2.4rem,5vw,4.5rem);margin:.5rem 0 1rem;letter-spacing:-.045em}.brief p{color:var(--muted);line-height:1.7}.brief form{display:grid;gap:1.25rem}.brief label{display:grid;gap:.55rem;font-size:.92rem}.brief input,.brief textarea{width:100%;box-sizing:border-box;border:1px solid rgba(31,29,25,.18);background:#fffdf8;border-radius:1rem;padding:1rem;font:inherit}.brief textarea{min-height:160px;resize:vertical}.two{display:grid;grid-template-columns:1fr 1fr;gap:1rem}.brief small{color:var(--muted)}.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(31,29,25,.12);margin-bottom:7rem}.steps article{background:#f3efe7;padding:2.2rem}.steps span{font-size:.78rem}.steps h3{font-size:1.4rem;margin:2.5rem 0 .6rem}.steps p{color:var(--muted);line-height:1.6}.button[disabled]{opacity:.5;cursor:not-allowed}
+@media(max-width:760px){.custom-page{padding-top:4rem}.custom-hero{grid-template-columns:1fr;min-height:auto;gap:2rem;padding-top:3rem;padding-bottom:4rem}.visual{min-height:320px}.brief{grid-template-columns:1fr;gap:2rem;padding-top:4rem;padding-bottom:4rem}.two{grid-template-columns:1fr}.steps{grid-template-columns:1fr;margin-bottom:4rem}}
+</style>
