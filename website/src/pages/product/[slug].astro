@@ -11,8 +11,11 @@ const products = {
   'form-03': { name:'FORM 03', size:'70 × 110 см', price:'16 900 ₽', variant:'sand', status:'В наличии', text:'Нейтральный светлый ковёр для спокойного современного интерьера.' }
 } as const;
 
+export function getStaticPaths() {
+  return ['form-01', 'form-02', 'line-01', 'form-03'].map((slug) => ({ params: { slug } }));
+}
+
 type Slug = keyof typeof products;
-export function getStaticPaths(){return Object.keys(products).map((slug)=>({params:{slug}}));}
 const slug = Astro.params.slug as Slug;
 const product = products[slug];
 ---
