@@ -1,0 +1,50 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import RugVisual from '../components/RugVisual.astro';
+
+const products = [
+  { slug:'form-01', name:'FORM 01', size:'80 × 120 см', price:'18 900 ₽', variant:'sage', status:'В наличии' },
+  { slug:'form-02', name:'FORM 02', size:'Ø 90 см', price:'14 900 ₽', variant:'clay', status:'На заказ' },
+  { slug:'line-01', name:'LINE 01', size:'90 × 140 см', price:'21 900 ₽', variant:'graphite', status:'На заказ' },
+  { slug:'form-03', name:'FORM 03', size:'70 × 110 см', price:'16 900 ₽', variant:'sand', status:'В наличии' },
+] as const;
+---
+<BaseLayout title="Коллекция — VORS STUDIO" description="Готовые дизайны ковров VORS Studio.">
+  <Header />
+  <main class="catalog-page">
+    <section class="page-hero shell">
+      <span class="eyebrow">КОЛЛЕКЦИЯ</span>
+      <h1>Ковры VORS</h1>
+      <p>Готовые дизайны и модели, которые можно изготовить повторно. Перед запуском здесь появятся реальные фотографии, размеры и сроки.</p>
+    </section>
+
+    <section class="shell filters" aria-label="Фильтры каталога">
+      <button class="active">Все</button><button>В наличии</button><button>На заказ</button><button>Круглые</button><button>Фигурные</button>
+    </section>
+
+    <section class="shell product-grid catalog-grid">
+      {products.map((product) => (
+        <a class="product-card catalog-link" href={`/product/${product.slug}/`}>
+          <div class="product-art">
+            <span class="product-status">{product.status}</span>
+            <RugVisual variant={product.variant} label={`${product.name}, ковёр VORS`} />
+          </div>
+          <div class="product-info">
+            <div><h2>{product.name}</h2><span>{product.size}</span></div>
+            <strong>{product.price}</strong>
+          </div>
+        </a>
+      ))}
+    </section>
+    <p class="shell prototype-note">Визуалы, названия и цены сейчас демонстрационные — чужие фотографии в проект не используем.</p>
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  .catalog-page{padding-top:6rem}.page-hero{padding-top:5rem;padding-bottom:3rem;max-width:1180px}.page-hero h1{font-size:clamp(3.5rem,8vw,7rem);margin:.25rem 0 1rem;letter-spacing:-.055em}.page-hero p{max-width:700px;font-size:1.08rem;line-height:1.7;color:var(--muted)}
+  .filters{display:flex;gap:.65rem;flex-wrap:wrap;padding-bottom:2.5rem}.filters button{border:1px solid rgba(31,29,25,.15);background:transparent;border-radius:999px;padding:.7rem 1rem;font:inherit;cursor:pointer}.filters button.active{background:#24211d;color:#fff;border-color:#24211d}.catalog-grid{padding-bottom:2rem}.catalog-link{text-decoration:none;color:inherit}.catalog-link h2{font:inherit;font-size:1rem;margin:0 0 .3rem}.prototype-note{padding-bottom:7rem}
+  @media(max-width:760px){.catalog-page{padding-top:4rem}.page-hero{padding-top:3.5rem}.filters{overflow:auto;flex-wrap:nowrap;padding-bottom:1.5rem}.filters button{white-space:nowrap}.catalog-grid{grid-template-columns:1fr 1fr;gap:1rem}.product-info{align-items:flex-start;gap:.3rem;flex-direction:column}.product-info strong{font-size:.95rem}}
+</style>
