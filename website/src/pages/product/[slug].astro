@@ -1,0 +1,41 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import RugVisual from '../../components/RugVisual.astro';
+
+const products = {
+  'form-01': { name:'FORM 01', size:'80 × 120 см', price:'18 900 ₽', variant:'sage', status:'В наличии', text:'Спокойная геометрия и мягкая природная палитра для гостиной, спальни или кабинета.' },
+  'form-02': { name:'FORM 02', size:'Ø 90 см', price:'14 900 ₽', variant:'clay', status:'На заказ', text:'Круглая форма и тёплый акцент для компактного пространства.' },
+  'line-01': { name:'LINE 01', size:'90 × 140 см', price:'21 900 ₽', variant:'graphite', status:'На заказ', text:'Графичный ковёр с более строгим характером и контрастной композицией.' },
+  'form-03': { name:'FORM 03', size:'70 × 110 см', price:'16 900 ₽', variant:'sand', status:'В наличии', text:'Нейтральный светлый ковёр для спокойного современного интерьера.' }
+} as const;
+
+type Slug = keyof typeof products;
+export function getStaticPaths(){return Object.keys(products).map((slug)=>({params:{slug}}));}
+const slug = Astro.params.slug as Slug;
+const product = products[slug];
+---
+<BaseLayout title={`${product.name} — VORS STUDIO`} description={`${product.name}, ковёр ручной работы VORS Studio.`}>
+<Header />
+<main class="product-page shell">
+  <a class="back" href="/catalog/">← Коллекция</a>
+  <section class="product-layout">
+    <div class="visual"><RugVisual variant={product.variant} label={`${product.name}, ковёр VORS`} /></div>
+    <div class="copy">
+      <span class="eyebrow">VORS STUDIO</span>
+      <h1>{product.name}</h1>
+      <p class="status">{product.status}</p>
+      <p class="lead">{product.text}</p>
+      <dl><div><dt>Размер</dt><dd>{product.size}</dd></div><div><dt>Производство</dt><dd>Ручная работа</dd></div><div><dt>Фактура</dt><dd>Тафтинговый ворс</dd></div></dl>
+      <div class="buy"><strong>{product.price}</strong><a class="button button-dark" href="/custom/">Заказать</a></div>
+      <small>Карточка демонстрационная. Перед запуском добавим реальные фото, состав, срок изготовления и точные условия ухода.</small>
+    </div>
+  </section>
+</main>
+<Footer />
+</BaseLayout>
+<style>
+.product-page{padding-top:9rem;padding-bottom:8rem}.back{text-decoration:none;color:var(--muted);font-size:.9rem}.product-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:5rem;align-items:center;margin-top:2rem}.visual{min-height:620px;background:#e8e0d2;border-radius:2rem;padding:4rem;display:flex;align-items:center;justify-content:center}.copy h1{font-size:clamp(4rem,7vw,7rem);line-height:.9;letter-spacing:-.06em;margin:.6rem 0}.status{display:inline-block;background:#ded5c6;border-radius:999px;padding:.45rem .75rem;font-size:.8rem}.lead{font-size:1.1rem;line-height:1.7;color:var(--muted);margin:1.8rem 0}.copy dl{margin:0;border-top:1px solid rgba(31,29,25,.14)}.copy dl div{display:flex;justify-content:space-between;gap:1rem;padding:1rem 0;border-bottom:1px solid rgba(31,29,25,.14)}dt{color:var(--muted)}dd{margin:0}.buy{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:2rem 0}.buy strong{font-size:1.55rem}.copy small{display:block;color:var(--muted);line-height:1.5}
+@media(max-width:760px){.product-page{padding-top:7rem;padding-bottom:5rem}.product-layout{grid-template-columns:1fr;gap:2rem}.visual{min-height:360px;padding:2rem}.buy{align-items:stretch;flex-direction:column}.buy .button{text-align:center}}
+</style>
