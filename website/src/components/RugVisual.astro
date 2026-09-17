@@ -1,0 +1,17 @@
+---
+interface Props {
+  variant?: 'sage' | 'clay' | 'graphite' | 'sand';
+  compact?: boolean;
+  label?: string;
+}
+
+const { variant = 'sage', compact = false, label = 'Авторский ковёр VORS' } = Astro.props;
+---
+<div class:list={['rug-visual', `rug-${variant}`, compact && 'rug-compact']} role="img" aria-label={label}>
+  <div class="rug-shape">
+    <span class="rug-line line-a"></span>
+    <span class="rug-line line-b"></span>
+    <span class="rug-dot dot-a"></span>
+    <span class="rug-dot dot-b"></span>
+  </div>
+</div>
