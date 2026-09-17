@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+
+const steps=[
+['01','Идея','Вы рассказываете, что хотите получить, и присылаете изображение или описание.'],
+['02','Макет','Уточняем форму, размер, цвета, материалы и стоимость.'],
+['03','Подготовка','Переносим утверждённый рисунок на основу и подготавливаем материалы.'],
+['04','Тафтинг','Создаём поверхность ковра вручную, участок за участком.'],
+['05','Финиш','Клеим, выравниваем, стрижём, прорабатываем края и контуры.'],
+['06','Проверка','Осматриваем готовый ковёр и готовим его к упаковке.'],
+['07','Доставка','Передаём заказ в доставку и добавляем трек-номер на страницу заказа.']
+] as const;
+---
+<BaseLayout title="Как мы работаем — VORS STUDIO" description="Процесс создания ковра VORS от идеи до доставки.">
+<Header />
+<main class="process-page">
+  <section class="shell process-hero"><span class="eyebrow">ПРОЦЕСС</span><h1>От идеи до готового VORS.</h1><p>Показываем весь путь заказа заранее — без исчезновения мастерской и загадочного «ещё немного подождите».</p></section>
+  <section class="shell timeline">
+    {steps.map(([n,t,d])=>(<article><span>{n}</span><div><h2>{t}</h2><p>{d}</p></div></article>))}
+  </section>
+  <section class="track-band"><div class="shell track-grid"><div><span class="eyebrow eyebrow-light">СТАТУС ЗАКАЗА</span><h2>Вы видите, что происходит.</h2></div><p>После оформления у заказа появится собственная страница: текущий этап, история изменений, фотографии процесса и информация об отправке. Важные обновления отправим в выбранный мессенджер.</p></div></section>
+</main>
+<Footer />
+</BaseLayout>
+<style>
+.process-page{padding-top:6rem}.process-hero{padding-top:6rem;padding-bottom:5rem}.process-hero h1{font-size:clamp(3.8rem,8vw,7.6rem);letter-spacing:-.06em;line-height:.92;margin:.5rem 0 1.5rem;max-width:1000px}.process-hero p{font-size:1.12rem;line-height:1.7;color:var(--muted);max-width:700px}.timeline{padding-bottom:8rem}.timeline article{display:grid;grid-template-columns:120px 1fr;padding:2.2rem 0;border-top:1px solid rgba(31,29,25,.14)}.timeline article>span{font-size:.78rem;color:var(--muted);padding-top:.4rem}.timeline h2{font-size:clamp(1.8rem,3.5vw,3rem);margin:0 0 .5rem;letter-spacing:-.035em}.timeline p{margin:0;color:var(--muted);line-height:1.65;max-width:700px}.track-band{background:#27241f;color:#f7f2e9;padding:7rem 0}.track-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:5rem}.track-grid h2{font-size:clamp(2.8rem,5vw,5rem);letter-spacing:-.05em;line-height:.98;margin:.5rem 0}.track-grid p{color:#c7bfb2;line-height:1.75;font-size:1.08rem;margin:0}
+@media(max-width:760px){.process-page{padding-top:4rem}.process-hero{padding-top:4rem}.timeline article{grid-template-columns:55px 1fr}.track-band{padding:5rem 0}.track-grid{grid-template-columns:1fr;gap:2rem}}
+</style>
