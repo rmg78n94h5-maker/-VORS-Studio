@@ -1,0 +1,19 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+---
+<BaseLayout title="О студии — VORS STUDIO" description="О VORS Studio и подходе к ручному производству ковров.">
+<Header />
+<main class="about-page">
+  <section class="shell about-hero"><span class="eyebrow">О СТУДИИ</span><h1>VORS — про вещи, которые не выглядят случайными.</h1><p>Мы создаём ковры вручную и относимся к ним как к части интерьера, а не как к сувенирной печати на полу.</p></section>
+  <section class="shell manifesto"><div><span class="eyebrow">ПОДХОД</span><h2>Спокойный дизайн.<br />Честная ручная работа.</h2></div><div><p>В VORS важны форма, цвет, пропорции, фактура и то, как вещь живёт в пространстве. Мы не пытаемся превратить ручную работу в пафос и не маскируем производство красивыми словами.</p><p>Сначала идея. Потом макет. Потом материалы, тафтинг, стрижка, финиш и проверка. Всё по шагам и с понятным статусом заказа.</p></div></section>
+  <section class="values shell"><article><span>01</span><h3>Не поток</h3><p>Каждый проект проходит через ручную работу и визуальный контроль.</p></article><article><span>02</span><h3>Не копия</h3><p>Даже повторяемые дизайны сохраняют характер ручного производства.</p></article><article><span>03</span><h3>Не вслепую</h3><p>Клиент видит этапы и понимает, что происходит с заказом.</p></article></section>
+  <section class="quote-band"><div class="shell"><p>Больше, чем ковёр.<br /><em>Часть вашего пространства.</em></p></div></section>
+</main>
+<Footer />
+</BaseLayout>
+<style>
+.about-page{padding-top:6rem}.about-hero{padding-top:6rem;padding-bottom:7rem}.about-hero h1{font-size:clamp(3.6rem,7.5vw,7.2rem);line-height:.95;letter-spacing:-.06em;max-width:1120px;margin:.5rem 0 1.5rem}.about-hero p{font-size:1.15rem;line-height:1.7;color:var(--muted);max-width:720px}.manifesto{display:grid;grid-template-columns:1fr 1fr;gap:5rem;padding-top:7rem;padding-bottom:7rem;border-top:1px solid rgba(31,29,25,.14)}.manifesto h2{font-size:clamp(2.7rem,5vw,4.8rem);line-height:1;letter-spacing:-.05em;margin:.5rem 0}.manifesto p{font-size:1.05rem;line-height:1.75;color:var(--muted)}.values{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(31,29,25,.12);margin-bottom:7rem}.values article{background:#f3efe7;padding:2.4rem}.values span{font-size:.78rem}.values h3{font-size:1.6rem;margin:3rem 0 .6rem}.values p{color:var(--muted);line-height:1.65}.quote-band{background:#d8c6a9;padding:8rem 0}.quote-band p{font-size:clamp(3rem,7vw,7rem);line-height:.95;letter-spacing:-.055em;margin:0}.quote-band em{font-family:serif;font-weight:400}
+@media(max-width:760px){.about-page{padding-top:4rem}.about-hero{padding-top:4rem;padding-bottom:5rem}.manifesto{grid-template-columns:1fr;gap:2rem;padding-top:5rem;padding-bottom:5rem}.values{grid-template-columns:1fr;margin-bottom:5rem}.quote-band{padding:5rem 0}}
+</style>
