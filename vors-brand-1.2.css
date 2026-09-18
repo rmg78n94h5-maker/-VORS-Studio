@@ -1,0 +1,124 @@
+/* VORS Studio 1.2 — brand integration */
+:root {
+  --brand-ink:#0F1724;
+  --brand-slate:#435A6D;
+  --brand-clay:#C86E4A;
+  --brand-sand:#E7DDD0;
+  --brand-warm:#F7F5F2;
+  --brand-moss:#7C8A7A;
+}
+
+/* Short in-app launch screen */
+#splash.splash {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:0;
+  background:var(--brand-ink);
+  color:var(--brand-sand);
+  opacity:1;
+  visibility:visible;
+  transition:opacity .38s ease, visibility .38s ease;
+}
+#splash.splash.hidden { opacity:0; visibility:hidden; pointer-events:none; }
+.splash-logo {
+  width:104px;
+  height:auto;
+  display:block;
+  opacity:0;
+  transform:translateY(8px) scale(.97);
+  animation:vorsSplashMark .48s cubic-bezier(.2,.75,.25,1) .04s forwards;
+}
+.splash-wordmark {
+  margin-top:22px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  line-height:1;
+  opacity:0;
+  transform:translateY(7px);
+  animation:vorsSplashType .42s ease .18s forwards;
+}
+.splash-wordmark strong {
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Inter,sans-serif;
+  font-size:34px;
+  font-weight:520;
+  letter-spacing:.13em;
+}
+.splash-wordmark span {
+  margin-top:7px;
+  font-size:14px;
+  font-weight:500;
+  letter-spacing:.03em;
+}
+@keyframes vorsSplashMark {
+  to { opacity:1; transform:translateY(0) scale(1); }
+}
+@keyframes vorsSplashType {
+  to { opacity:1; transform:translateY(0); }
+}
+
+/* Brand mark in the app shell */
+.brand-symbol--app {
+  width:29px;
+  height:39px;
+  display:block;
+  flex:0 0 auto;
+}
+.vors-v1 .brand-lockup {
+  gap:9px;
+}
+.vors-v1 .brand-lockup > div:last-child {
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:1px;
+}
+.vors-v1 .brand-lockup strong {
+  color:var(--brand-ink);
+  font-size:17px;
+  font-weight:720;
+  letter-spacing:.12em;
+  line-height:1;
+}
+.vors-v1 .brand-lockup > div:last-child > span {
+  display:block;
+  margin:0;
+  color:#6d716f;
+  font-size:10px;
+  line-height:1;
+  letter-spacing:.04em;
+}
+
+/* Nudge the 1.0 shell toward the approved brand palette without making the UI decorative. */
+body.vors-v1 {
+  --ink:var(--brand-ink);
+  --navy:var(--brand-ink);
+  --clay:var(--brand-clay);
+  --clay-dark:#a95235;
+  --sand:var(--brand-sand);
+  --moss:var(--brand-moss);
+}
+.vors-v1 .nav-item.active,
+.vors-v1 .primary-btn,
+.vors-v1 .v1-round-action {
+  background:var(--brand-ink);
+}
+.vors-v1 .v1-eyebrow {
+  color:#74766f;
+}
+.vors-v1 .flow-design-label,
+.vors-v1 .flow-purpose-badge {
+  background:rgba(15,23,36,.82);
+}
+
+@media (max-width:620px) {
+  .brand-symbol--app { width:27px; height:36px; }
+  .vors-v1 .brand-lockup strong { font-size:16px; }
+  .vors-v1 .brand-lockup > div:last-child > span { font-size:9px; }
+}
+
+@media (prefers-reduced-motion:reduce) {
+  .splash-logo,.splash-wordmark { animation:none; opacity:1; transform:none; }
+}
