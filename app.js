@@ -3102,4 +3102,4 @@ function registerServiceWorker(){if('serviceWorker'in navigator){window.addEvent
 setupGlobalEvents();
 render();
 registerServiceWorker();
-setTimeout(()=>document.getElementById('splash')?.classList.add('hidden'),650);
+setTimeout(()=>document.getElementById('splash')?.classList.add('hidden'),900);
