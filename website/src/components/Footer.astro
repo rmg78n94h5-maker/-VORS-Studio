@@ -1,9 +1,12 @@
+---
+const base = import.meta.env.BASE_URL;
+---
 <footer class="site-footer" id="about">
   <div class="shell footer-grid">
     <div class="footer-brand-block">
       <a class="brand brand-footer" href="/">
-        <span class="brand-main">VORS</span>
-        <span class="brand-sub">STUDIO</span>
+        <img class="brand-symbol" src={`${base}vors-mark-light.svg`} alt="" />
+        <span class="brand-copy"><span class="brand-main">VORS</span><span class="brand-sub">Studio</span></span>
       </a>
       <p>Больше, чем ковёр. Часть вашего пространства.</p>
     </div>
