@@ -1,4 +1,4 @@
-const CACHE = 'vors-studio-v1.1.0-flow-r2';
+const CACHE = 'vors-studio-v1.2.0-brand';
 const ASSETS = [
   './',
   './index.html',
@@ -7,13 +7,17 @@ const ASSETS = [
   './vors-1.0.css',
   './vors-1.0-fixes.css',
   './vors-1.1-flow.css',
+  './vors-brand-1.2.css',
   './app.js',
   './catalog-kudel-2026-09.js',
   './materials-ui-0.9.1.js',
   './vors-1.0-ui.js',
   './vors-1.0-fixes.js',
   './vors-1.1-flow.js',
+  './vors-brand-1.2.js',
   './manifest.webmanifest',
+  './icons/vors-mark.svg',
+  './icons/vors-mark-light.svg',
   './icons/icon-192.png',
   './icons/icon-512.png',
   './icons/apple-touch-icon.png'

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 160" role="img" aria-labelledby="title desc">
+  <title id="title">VORS Studio monogram</title>
+  <desc id="desc">Монограмма VORS с нитью и клубком</desc>
+  <g fill="none" stroke="#E7DDD0" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M27 127V53c0-23 14-37 33-37s33 14 33 37v74H27Z"/>
+    <path d="M43 44 60 88 78 44"/>
+    <path d="M67 68c8-5 13-10 18-17"/>
+    <circle cx="60" cy="106" r="19"/>
+    <path d="M45 106c9-9 21-13 30-10"/>
+    <path d="M47 114c7-8 18-15 28-16"/>
+    <path d="M50 120c5-7 14-15 23-18"/>
+    <path d="M46 99c7 2 20 8 27 18"/>
+    <path d="M51 91c7 4 18 13 23 22"/>
+    <path d="M72 119c4 7 7 11 12 14 7 4 13 3 18 7 6 4 4 12-2 14-5 2-10-1-9-5"/>
+  </g>
+</svg>
