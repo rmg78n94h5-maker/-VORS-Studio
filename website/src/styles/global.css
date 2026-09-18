@@ -265,26 +265,26 @@ p { line-height: 1.72; }
 
 @media (max-width: 700px) {
   .shell { width:calc(100% - 30px); }
-  .section-space { padding:78px 0; }
-  .section-space-tight { padding:64px 0; }
+  .section-space { padding:64px 0; }
+  .section-space-tight { padding:52px 0; }
   .header-inner { height:70px;gap:10px; }
   .brand-main { font-size:24px; }
   .header-cta { display:none; }
-  .hero { padding-top:28px; }
+  .hero { padding-top:22px; }
   .hero-grid { min-height:auto; }
   .hero-copy { display:flex;flex-direction:column; }
   .hero-copy .eyebrow { margin-bottom:15px; }
-  .hero-lead { font-size:15px;margin-top:24px; }
-  .hero-actions { flex-direction:column;align-items:stretch; }
+  .hero-lead { font-size:15px;line-height:1.62;margin-top:20px; }
+  .hero-actions { flex-direction:column;align-items:stretch;margin-top:26px; }
   .hero-actions .button { width:100%; }
-  .hero-meta { display:grid;grid-template-columns:1fr 1fr;gap:9px 15px;margin-top:28px;font-size:9px; }
+  .hero-meta { display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;margin-top:22px;font-size:9px; }
   .hero-meta span::after { display:none!important; }
-  .room-panel { min-height:500px;border-radius:28px; }
+  .room-panel { min-height:460px;border-radius:22px; }
   .sofa { left:12%;width:65%; }
   .floor-rug-shape { width:92%; }
   .hero-stamp { font-size:22px; }
-  h1 { font-size:clamp(48px,14vw,66px); }
-  h2 { font-size:clamp(38px,11vw,52px); }
+  h1 { font-size:clamp(36px,10.2vw,46px); line-height:1; letter-spacing:-.04em; }
+  h2 { font-size:clamp(30px,8.4vw,38px); line-height:1.06; letter-spacing:-.035em; }
   .intro-grid { grid-template-columns:1fr;gap:26px; }
   .feature-grid { grid-template-columns:1fr 1fr;margin-top:40px; }
   .feature-grid article { padding:22px 14px 22px 0;min-height:150px; }
@@ -322,7 +322,7 @@ p { line-height: 1.72; }
   .materials-grid,.craft-grid { gap:38px; }
   .business-tags span { font-size:8px; }
   .delivery-grid { grid-template-columns:1fr; }
-  .final-card { padding:58px 22px;border-radius:30px; }
+  .final-card { padding:48px 20px;border-radius:22px; }
   .final-card > div { flex-direction:column; }
   .footer-grid { grid-template-columns:1fr 1fr;gap:38px 20px; }
   .footer-brand-block { grid-column:1/-1; }
