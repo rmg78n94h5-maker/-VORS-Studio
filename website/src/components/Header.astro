@@ -1,8 +1,11 @@
+---
+const base = import.meta.env.BASE_URL;
+---
 <header class="site-header" data-header>
   <div class="shell header-inner">
     <a class="brand" href="/" aria-label="VORS Studio — на главную">
-      <span class="brand-main">VORS</span>
-      <span class="brand-sub">STUDIO</span>
+      <img class="brand-symbol" src={`${base}vors-mark.svg`} alt="" />
+      <span class="brand-copy"><span class="brand-main">VORS</span><span class="brand-sub">Studio</span></span>
     </a>
 
     <nav class="desktop-nav" aria-label="Основная навигация">
