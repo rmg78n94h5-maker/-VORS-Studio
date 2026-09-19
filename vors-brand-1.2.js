@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const BRAND_VERSION = '1.2.0';
+  const BRAND_VERSION = '1.2.1';
 
   function applyBrandVersion() {
     const version = document.querySelector('.sidebar-footer .version b');
