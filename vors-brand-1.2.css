@@ -23,7 +23,7 @@
 }
 #splash.splash.hidden { opacity:0; visibility:hidden; pointer-events:none; }
 .splash-logo {
-  width:104px;
+  width:92px;
   height:auto;
   display:block;
   opacity:0;
@@ -31,7 +31,7 @@
   animation:vorsSplashMark .48s cubic-bezier(.2,.75,.25,1) .04s forwards;
 }
 .splash-wordmark {
-  margin-top:22px;
+  margin-top:18px;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -42,7 +42,7 @@
 }
 .splash-wordmark strong {
   font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Inter,sans-serif;
-  font-size:34px;
+  font-size:31px;
   font-weight:520;
   letter-spacing:.13em;
 }
@@ -61,8 +61,8 @@
 
 /* Brand mark in the app shell */
 .brand-symbol--app {
-  width:29px;
-  height:39px;
+  width:24px;
+  height:35px;
   display:block;
   flex:0 0 auto;
 }
@@ -114,7 +114,7 @@ body.vors-v1 {
 }
 
 @media (max-width:620px) {
-  .brand-symbol--app { width:27px; height:36px; }
+  .brand-symbol--app { width:23px; height:33px; }
   .vors-v1 .brand-lockup strong { font-size:16px; }
   .vors-v1 .brand-lockup > div:last-child > span { font-size:9px; }
 }
