@@ -34,6 +34,22 @@ const base = import.meta.env.BASE_URL;
           link.setAttribute('href', `${base}${href.replace(/^\/+/, '')}`);
         });
       }
+
+      // The public site and workshop app used to share one Pages scope.
+      // Retire that old root PWA so Safari does not keep serving stale app assets over the website.
+      if ('serviceWorker' in navigator) {
+        const rootScope = new URL(base, window.location.origin).href;
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          registrations.forEach((registration) => {
+            if (registration.scope === rootScope) registration.unregister();
+          });
+        });
+      }
+      if ('caches' in window) {
+        caches.keys().then((keys) => Promise.all(
+          keys.filter((key) => key.startsWith('vors-studio-')).map((key) => caches.delete(key))
+        ));
+      }
     </script>
   </body>
 </html>
