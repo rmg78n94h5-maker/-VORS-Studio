@@ -1,177 +1,205 @@
-(function purchasePatch() {
+(function patchPurchasesV123() {
   'use strict';
-  const IMPORT_FLAG = 'vors-oct-2026-purchases-imported-v1';
-  const IMPORT_DATE = '2026-10-16';
-  const confirmed = [
-    {id:'KD-TAIGA',catalogId:'CAT-CUSTOM-OCT26-DER-10',type:'Пряжа',brand:'Пехорка',line:'Деревенская',colorCode:'10',colorName:'ТАЙГА',name:'Пехорка «Деревенская» №10 Тайга',quantity:900,unit:'г',skeins:9,price:1746,supplier:'Кудель'},
-    {id:'KD-TERRA',catalogId:'CAT-CUSTOM-OCT26-DER-30',type:'Пряжа',brand:'Пехорка',line:'Деревенская',colorCode:'30',colorName:'СВ.ТЕРРАКОТ',name:'Пехорка «Деревенская» №30 Св.Терракот',quantity:600,unit:'г',skeins:6,price:1164,supplier:'Кудель',note:'Название линейки сверить с этикеткой: в каталоге оттенок №30 также есть у «Секрет успеха».'},
-    {id:'KD-SUROV',catalogId:'CAT-CUSTOM-OCT26-OVC-166',type:'Пряжа',brand:'Пехорка',line:'Овечья',colorCode:'166',colorName:'СУРОВЫЙ',name:'Пехорка «Овечья» №166 Суровый',quantity:1200,unit:'г',skeins:12,price:1728,supplier:'Кудель'},
-    {id:'OZ-LUNE',catalogId:'CAT-CUSTOM-OCT26-LUNE',type:'Клей',brand:'LUNE COLOREE',line:'Акриловый клей для ковролина и тафтинга',colorCode:'',colorName:'',name:'Клей LUNE COLOREE акриловый, 1,5 кг',quantity:1500,unit:'г',skeins:1,price:580,supplier:'Ozon',supplierSku:'4235125394'}
+  const MIGRATION='octPurchasesVersion';
+  const ACCOUNT_DATE='2026-10-16';
+  const ITEMS=[
+    {id:'KD-TAIGA',name:'Пехорка «Деревенская» №10 Тайга',type:'Пряжа',brand:'Пехорка',line:'Деревенская',colorCode:'10',colorName:'ТАЙГА',supplier:'Кудель',qty:900,unit:'г',packs:9,price:1746,sku:'',catalog:'CAT-CUSTOM-OCT26-DER-10',status:'Заказано · доставка не уточнена',eta:'',shade:'#4f7c58'},
+    {id:'KD-TERRA',name:'Пехорка «Деревенская» №30 Св. терракот',type:'Пряжа',brand:'Пехорка',line:'Деревенская',colorCode:'30',colorName:'СВ.ТЕРРАКОТ',supplier:'Кудель',qty:600,unit:'г',packs:6,price:1164,sku:'',catalog:'CAT-CUSTOM-OCT26-DER-30',status:'Заказано · доставка не уточнена',eta:'',shade:'#b96647',note:'Название линейки сверить по этикетке; в старой библиотеке оттенок №30 также встречается у другой линейки.'},
+    {id:'KD-SUROV',name:'Пехорка «Овечья» №166 Суровый',type:'Пряжа',brand:'Пехорка',line:'Овечья',colorCode:'166',colorName:'СУРОВЫЙ',supplier:'Кудель',qty:1200,unit:'г',packs:12,price:1728,sku:'',catalog:'CAT-CUSTOM-OCT26-OVC-166',status:'Заказано · доставка не уточнена',eta:'',shade:'#eee9df'},
+    {id:'OZ-LUNE',name:'LUNE COLOREE · клей акриловый, 1,5 кг',type:'Клей',brand:'LUNE COLOREE',line:'Клей напольный акриловый',colorCode:'',colorName:'',supplier:'Ozon',qty:1500,unit:'г',packs:1,price:644,sku:'',catalog:'CAT-CUSTOM-OCT26-LUNE',status:'В пути',eta:'Ожидается 19 октября',shade:'#d9b36c',note:'На карточке 644 ₽; ранее в переписке фигурировали 580 ₽. Фактическую цену списания проверить по чеку.'},
+    {id:'OZ-KESTO',name:'Kesto PLUS · клей для ПВХ, акриловый, 1,4 кг',type:'Клей',brand:'Kesto',line:'PLUS',colorCode:'',colorName:'',supplier:'Ozon',qty:1400,unit:'г',packs:1,price:855,sku:'',catalog:'CAT-CUSTOM-OCT26-KESTO-PLUS',status:'Готово к выдаче',eta:'Забрать до 30 октября',shade:'#d9b36c',note:'Вес 1,4 кг указан на иллюстрации товара.'},
+    {id:'OZ-TAPE',name:'Киперная лента · суровая, 20 мм × 50 м',type:'Кромка',brand:'Страна Рукоделия',line:'Киперная лента 20 мм',colorCode:'',colorName:'Суровая / светло-бежевая',supplier:'Ozon',qty:50,unit:'м',packs:1,price:258,sku:'',catalog:'CAT-CUSTOM-OCT26-TAPE-20MM',status:'Готово к выдаче',eta:'Забрать до 30 октября',shade:'#c2a97d',note:'На скриншоте указана оплата при получении 258 ₽. Не считать подтверждённой оплатой.'},
+    {id:'OZ-ANTISLIP',name:'Антислип для тафтинга · 200 × 180 см',type:'Подложка',brand:'',line:'Антискользящая подложка',colorCode:'',colorName:'Антислип',supplier:'Ozon',qty:3.6,unit:'м²',packs:1,price:1508,sku:'',catalog:'CAT-CUSTOM-OCT26-ANTISLIP',status:'В сборке',eta:'Ожидается 29 октября — 9 ноября',shade:'#87928e',note:'Одна ткань 200 × 180 см = 3,6 м². Доставка RETS Economy Budget.'}
   ];
-  const pending = [
-    {id:'OZ-KESTO',name:'Клей Kesto (точная модель не указана)',type:'Клей',supplier:'Ozon',quantity:null,price:null,unit:'г',status:'Нужны объём и стоимость'},
-    {id:'OZ-ANTISLIP',name:'Антискользящая подложка (антислип)',type:'Подложка',supplier:'Ozon',quantity:null,price:null,unit:'м²',status:'Нужны размер и стоимость'},
-    {id:'OZ-TAPE',name:'Киперная лента',type:'Кромка',supplier:'Ozon',quantity:null,price:null,unit:'м',status:'Нужны метраж и стоимость'}
-  ];
-  function getCatalog(spec) {
-    let item = (state.materialCatalog || []).find(x => x.id === spec.catalogId);
-    if (!item && spec.type === 'Пряжа' && spec.id !== 'KD-TERRA') {
-      item = state.materialCatalog.find(x => x.type === 'Пряжа' &&
-        String(x.line).toLowerCase() === spec.line.toLowerCase() &&
-        String(x.colorCode).toLowerCase() === spec.colorCode.toLowerCase());
+  const SHIPPING={id:'REG-KD-DELIVERY',title:'Доставка «Кудель»',category:'Доставка',supplier:'Кудель',quantity:1,unit:'услуга',amount:193,status:'Заказано',enteredAt:ACCOUNT_DATE,notes:'Доставка Ozon — 0 ₽.'};
+  const purchaseTotal=ITEMS.reduce((v,x)=>v+x.price,0);
+  const formatPrice=n=>rub(n);
+  const isReceived=x=>x.status==='Получено';
+  function storedCatalogue(id){return state.materialCatalog.find(x=>x.id===id);}
+  function ensureCatalogue(p) {
+    let c=storedCatalogue(p.catalog);
+    if(!c && p.type==='Пряжа' && p.id!=='KD-TERRA') {
+      c=state.materialCatalog.find(x=>x.type==='Пряжа'&&String(x.line).toLowerCase()===p.line.toLowerCase()&&String(x.colorCode)===p.colorCode);
     }
-    if (item) return item;
-    item = {
-      id:spec.catalogId,type:spec.type,brand:spec.brand,line:spec.line,
-      colorCode:spec.colorCode,colorName:spec.colorName,
-      name:spec.name,internalCode:'VORS-OCT26-'+spec.id,
-      supplier:spec.supplier,supplierSku:spec.supplierSku || '',
-      unit:spec.unit,nominalWeight:spec.type==='Пряжа'?100:0,lengthM:0,
-      swatch:spec.type==='Пряжа'?(spec.id==='KD-TAIGA'?'#4f7c58':spec.id==='KD-TERRA'?'#b96647':'#eee9df'):'#d9b36c',
-      composition:spec.type==='Клей'?'Акриловый водно-дисперсионный клей':'',
-      suggestedMin:0,lastSkeinPrice:spec.skeins?spec.price/spec.skeins:0,
-      availability:'Куплено',fitGroup:'На тест',system:false,
-      tuftingNote:spec.note || 'Фактическая закупка; характеристики уточнить по упаковке.'
+    if(c) return c;
+    const original=storedCatalogue(p.catalog);
+    if(original) return original;
+    c={
+      id:p.catalog,type:p.type,brand:p.brand||'',line:p.line||p.type,
+      colorCode:p.colorCode||'',colorName:p.colorName||p.name,
+      name:p.name,internalCode:'VORS-OCT26-'+p.id,
+      supplier:p.supplier,supplierSku:p.sku||'',unit:p.unit,
+      nominalWeight:p.type==='Пряжа'?100:0,lengthM:0,swatch:p.shade||'#b8a58f',
+      composition:p.type==='Клей'?'Акриловый водно-дисперсионный клей':'',
+      suggestedMin:0,lastSkeinPrice:p.packs?p.price/p.packs:0,availability:'Заказано',
+      fitGroup:'На тест',tuftingNote:p.note||'Реальная закупка VORS Studio.',system:false
     };
-    state.materialCatalog.push(item);
-    return item;
+    state.materialCatalog.push(c);
+    return c;
   }
-  function addConfirmed(spec) {
-    const catalog = getCatalog(spec);
-    let stock = state.materials.find(m => m.catalogId === catalog.id);
-    if (!stock) {
-      stock = {
-        id:'MAT-OCT26-'+spec.id,catalogId:catalog.id,
-        name:spec.name,type:spec.type,code:catalog.internalCode,internalCode:catalog.internalCode,
-        brand:catalog.brand,line:catalog.line,colorCode:catalog.colorCode,
-        colorName:catalog.colorName,supplier:spec.supplier,
-        supplierSku:catalog.supplierSku || '',supplierUrl:catalog.supplierUrl || '',
-        composition:catalog.composition || '',nominalWeight:catalog.nominalWeight || 0,
-        lengthM:catalog.lengthM || 0,swatch:catalog.swatch || '#b8a58f',
-        unit:spec.unit,stock:0,min:catalog.suggestedMin || 0,pricePerUnit:0,
-        location:'',lots:[],movements:[]
+  function migrateLegacySeed() {
+    // Old v1.2.2 marked ordered items as received. Undo ONLY untouched autogenerated lots.
+    for(const p of ITEMS) {
+      const lotId='LOT-OCT26-'+p.id;
+      for(const mat of [...state.materials]) {
+        const lots=Array.isArray(mat.lots)?mat.lots:[];
+        const target=lots.find(l=>l.id===lotId);
+        if(!target) continue;
+        const movements=Array.isArray(mat.movements)?mat.movements:[];
+        const exactUntouched=lots.length===1 && movements.every(m=>m.id==='MOV-OCT26-'+p.id)
+          && Number(mat.stock)===Number(target.initialWeight) && Number(target.remainingWeight)===Number(target.initialWeight);
+        if(exactUntouched) {
+          state.materials=state.materials.filter(m=>m!==mat);
+        } else {
+          const old=state.purchaseRegister?.find(x=>x.id==='REG-'+p.id);
+          if(old && old.status!=='Получено') old.status='Проверить старый складской остаток';
+        }
+      }
+    }
+  }
+  function upsertRegister(p) {
+    const id='REG-'+p.id;
+    let rec=state.purchaseRegister.find(x=>x.id===id);
+    const preservedReceived=rec && (rec.status==='Получено'||rec.receivedAt);
+    const conflict=rec?.status==='Проверить старый складской остаток';
+    const data={
+      id,title:p.name,category:p.type,supplier:p.supplier,quantity:p.qty,unit:p.unit,
+      amount:p.price,status:preservedReceived?'Получено':conflict?'Проверить старый складской остаток':p.status,
+      arrival:p.eta,enteredAt:ACCOUNT_DATE,orderDate:p.supplier==='Ozon'?'2026-10-15':'',
+      paymentStatus:p.id==='OZ-TAPE'?'При получении · 258 ₽':'Не подтверждено скриншотом',
+      source:'Скриншоты заказа от 15 октября 2026',note:p.note||'',
+      purchaseCatalogId:p.catalog
+    };
+    if(rec) Object.assign(rec,data);
+    else state.purchaseRegister.push(data);
+  }
+  function upgrade() {
+    state.meta=state.meta||{};
+    if(Number(state.meta[MIGRATION])>=3) return;
+    state.materialCatalog=Array.isArray(state.materialCatalog)?state.materialCatalog:[];
+    state.materials=Array.isArray(state.materials)?state.materials:[];
+    state.purchaseRegister=Array.isArray(state.purchaseRegister)?state.purchaseRegister:[];
+    state.finance=state.finance||{transactions:[],hours:0};
+    state.finance.transactions=Array.isArray(state.finance.transactions)?state.finance.transactions:[];
+    migrateLegacySeed();
+    ITEMS.forEach(p=>{ensureCatalogue(p);upsertRegister(p);});
+    let shipping=state.purchaseRegister.find(x=>x.id===SHIPPING.id);
+    if(shipping) Object.assign(shipping,SHIPPING);
+    else state.purchaseRegister.push({...SHIPPING});
+    const shippingEntry='EXP-OCT26-KUDEL-SHIPPING';
+    if(!state.finance.transactions.some(x=>x.id===shippingEntry)){
+      state.finance.transactions.unshift({
+        id:shippingEntry,kind:'expense',category:'Доставка',amount:193,
+        date:ACCOUNT_DATE,title:'Доставка «Кудель»',source:'Кудель',
+        note:'Стоимость доставки; дата фактического списания по чеку не установлена.'
+      });
+    }
+    state.meta[MIGRATION]=3;
+    state.meta.oct2026PurchaseSeeded=true;
+    state.meta.oct2026PurchaseNote='Общая стоимость заказа по карточкам — 8 096 ₽, из них 193 ₽ доставка. Товары ещё не все получены.';
+    saveState();
+  }
+  function receiveRecord(id) {
+    const p=ITEMS.find(x=>x.id===id);
+    const rec=state.purchaseRegister.find(x=>x.id==='REG-'+id);
+    if(!p||!rec||isReceived(rec)) return;
+    const c=ensureCatalogue(p);
+    let stock=state.materials.find(x=>x.catalogId===c.id);
+    if(!stock) {
+      stock={
+        id:'MAT-OCT26-'+p.id,catalogId:c.id,name:p.name,type:p.type,
+        code:c.internalCode,internalCode:c.internalCode,
+        brand:c.brand,line:c.line,colorCode:c.colorCode,colorName:c.colorName,
+        supplier:p.supplier,supplierSku:c.supplierSku||'',supplierUrl:c.supplierUrl||'',
+        composition:c.composition||'',nominalWeight:c.nominalWeight||0,lengthM:c.lengthM||0,
+        swatch:c.swatch,stock:0,min:0,unit:p.unit,pricePerUnit:0,location:'',
+        lots:[],movements:[]
       };
       state.materials.unshift(stock);
     }
-    stock.lots = Array.isArray(stock.lots)?stock.lots:[];
-    stock.movements = Array.isArray(stock.movements)?stock.movements:[];
-    const lotId = 'LOT-OCT26-'+spec.id;
-    if (stock.lots.some(l => l.id===lotId)) return;
-    // Avoid double-counting a receipt manually entered before this update.
-    if (stock.lots.some(l =>
-      Number(l.initialWeight)===spec.quantity &&
-      Number(l.purchasePrice)===spec.price &&
-      /кудел|ozon|озон/i.test(String(l.batch||'')+' '+String(l.note||'')))) return;
-    const previousQuantity = Number(stock.stock)||0;
-    const previousValue = previousQuantity*(Number(stock.pricePerUnit)||0);
-    stock.stock = previousQuantity+spec.quantity;
-    stock.pricePerUnit = (previousValue+spec.price)/stock.stock;
-    stock.lots.unshift({
-      id:lotId,date:IMPORT_DATE,
-      batch:'Закупка '+spec.supplier+' · октябрь 2026',
-      supplier:spec.supplier,sku:spec.supplierSku || '',
-      skeins:spec.skeins,initialWeight:spec.quantity,remainingWeight:spec.quantity,
-      purchasePrice:spec.price,
-      note:'Дата внесения в VORS: 16.10.2026; фактическая дата оплаты по чеку не установлена. '+(spec.note||'')
-    });
-    stock.movements.unshift({
-      id:'MOV-OCT26-'+spec.id,date:IMPORT_DATE,
-      type:'Поступление',delta:spec.quantity,
-      reason:'Реальная закупка '+spec.supplier+' (сверка октября 2026)'
-    });
-  }
-  function importPurchases() {
-    state.meta = state.meta||{};
-    if (state.meta.oct2026PurchaseSeeded) return;
-    try {
-      if (localStorage.getItem(IMPORT_FLAG)==='done') return;
-    } catch (_) {}
-    state.materialCatalog = state.materialCatalog || [];
-    state.materials = state.materials || [];
-    state.finance = state.finance || {transactions:[],hours:0};
-    state.finance.transactions = state.finance.transactions || [];
-    confirmed.forEach(addConfirmed);
-    const shippingId='EXP-OCT26-KUDEL-SHIPPING';
-    if (!state.finance.transactions.some(t=>t.id===shippingId)) {
-      state.finance.transactions.unshift({
-        id:shippingId,kind:'expense',category:'Доставка',amount:193,
-        date:IMPORT_DATE,title:'Доставка «Кудель» · октябрь 2026',
-        note:'Отдельный расход. Дата учёта 16.10.2026, дата оплаты требует сверки.',
-        source:'Кудель'
+    stock.lots=Array.isArray(stock.lots)?stock.lots:[];
+    stock.movements=Array.isArray(stock.movements)?stock.movements:[];
+    const lotId='LOT-OCT26-'+id;
+    if(!stock.lots.some(x=>x.id===lotId)){
+      const oldStock=Number(stock.stock)||0;
+      const oldValue=oldStock*(Number(stock.pricePerUnit)||0);
+      stock.stock=oldStock+p.qty;
+      stock.pricePerUnit=(oldValue+p.price)/stock.stock;
+      stock.lots.unshift({
+        id:lotId,date:ACCOUNT_DATE,batch:'Ozon/Kудель · подтверждённое поступление, октябрь 2026',
+        skeins:p.packs,initialWeight:p.qty,remainingWeight:p.qty,purchasePrice:p.price,
+        note:'Фактическая дата приёмки: '+ACCOUNT_DATE+'. '+(p.note||'')
+      });
+      stock.movements.unshift({
+        id:'MOV-OCT26-'+id,date:ACCOUNT_DATE,type:'Поступление',
+        delta:p.qty,reason:'Подтверждение поступления по реальной закупке'
       });
     }
-    const existing = Array.isArray(state.purchaseRegister)?state.purchaseRegister:[];
-    const byId=new Map(existing.map(item=>[item.id,item]));
-    for (const spec of confirmed) {
-      if (!byId.has('REG-'+spec.id)) byId.set('REG-'+spec.id,{
-        id:'REG-'+spec.id,title:spec.name,category:spec.type,
-        supplier:spec.supplier,quantity:spec.quantity,unit:spec.unit,
-        amount:spec.price,status:'Подтверждено',enteredAt:IMPORT_DATE,
-        note:spec.note || ''
-      });
-    }
-    for (const item of pending) {
-      if (!byId.has('REG-'+item.id)) byId.set('REG-'+item.id,{
-        id:'REG-'+item.id,title:item.name,category:item.type,
-        supplier:item.supplier,quantity:null,unit:item.unit,amount:null,
-        status:item.status,enteredAt:IMPORT_DATE,
-        note:'Покупка указана владельцем; сумму и складское количество пока не выдумываем.'
-      });
-    }
-    if (!byId.has('REG-KD-DELIVERY')) byId.set('REG-KD-DELIVERY',{
-      id:'REG-KD-DELIVERY',title:'Доставка заказа «Кудель»',category:'Доставка',
-      supplier:'Кудель',quantity:1,unit:'услуга',amount:193,
-      status:'Подтверждено',enteredAt:IMPORT_DATE,note:'Ozon: доставка 0 ₽.'
-    });
-    state.purchaseRegister=[...byId.values()];
-    state.meta.oct2026PurchaseSeeded=true;
-    state.meta.oct2026PurchaseNote='Частично подтверждённые закупки; общая сумма товаров около 8000 ₽, доставка Кудель 193 ₽.';
+    rec.status='Получено';
+    rec.receivedAt=ACCOUNT_DATE;
+    rec.arrival='Принято на склад';
     saveState();
-    try {
-      const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}');
-      if(saved.meta?.oct2026PurchaseSeeded) localStorage.setItem(IMPORT_FLAG,'done');
-    } catch(e) { console.warn('Не удалось отметить миграцию закупок',e); }
+    render();
+    toast('Поступление записано · '+p.name);
   }
-  const oldRenderMaterials=renderMaterials;
-  renderMaterials=function renderMaterialsWithPurchases(){
-    const html=oldRenderMaterials();
-    if(state.materialView!=='stock'||!state.purchaseRegister?.length) return html;
-    const list=state.purchaseRegister;
-    const fixed=list.filter(x=>Number.isFinite(x.amount));
-    const goods=fixed.filter(x=>x.category!=='Доставка').reduce((a,x)=>a+x.amount,0);
-    const delivery=fixed.filter(x=>x.category==='Доставка').reduce((a,x)=>a+x.amount,0);
-    const missing=list.filter(x=>x.amount===null||x.quantity===null);
-    const expected=8000;
-    const preview=list.map(x=>{
-      const ready=x.amount!==null && x.quantity!==null;
-      const quantity=x.quantity!==null ? `${num(x.quantity,0)} ${esc(x.unit)}` : 'Количество уточняется';
-      return `<div class="item-row" style="display:flex;align-items:center;gap:10px;justify-content:space-between;padding:11px 2px;border-bottom:1px solid #8882">
-        <div style="min-width:0;flex:1"><div class="item-title">${esc(x.title)}</div>
-          <div class="item-meta">${esc(x.supplier)} · ${quantity}</div></div>
-        <div style="text-align:right"><b>${ready?rub(x.amount):'—'}</b>
-          <div class="item-meta" style="font-size:11px">${ready?'Учтено':'Нужен чек'}</div></div>
-      </div>`;
+  const oldMaterials=renderMaterials;
+  renderMaterials=function renderOctPurchases() {
+    const html=oldMaterials();
+    if(state.materialView!=='stock'||!state.purchaseRegister?.length)return html;
+    const entries=ITEMS.map(p=>state.purchaseRegister.find(r=>r.id==='REG-'+p.id)).filter(Boolean);
+    const received=entries.filter(isReceived);
+    const counts=received.length;
+    const rows=entries.map(x=>{
+      const p=ITEMS.find(p=>'REG-'+p.id===x.id);
+      const done=isReceived(x);
+      const review=x.status==='Проверить старый складской остаток';
+      const eta=x.arrival?` · ${esc(x.arrival)}`:'';
+      return `<div class="item-row" style="display:flex;gap:12px;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #8882;flex-wrap:wrap">
+        <div style="flex:2;min-width:160px"><b>${esc(x.title)}</b><div class="item-meta">${esc(x.supplier)} · ${num(x.quantity,2)} ${esc(x.unit)} · ${esc(x.status)}${eta}</div></div>
+        <div style="text-align:right;min-width:92px"><b>${formatPrice(x.amount)}</b>
+        ${!done&&!review?`<div style="margin-top:6px"><button class="secondary-btn" data-vors-receive="${p.id}" style="padding:7px 9px;font-size:12px">Принять на склад</button></div>`:''}
+        ${review?'<small>Проверьте существующую партию</small>':''}
+        </div></div>`;
     }).join('');
-    const panel=`<article class="card card-pad" style="margin:0 0 18px">
-      <div class="card-head"><div><h3>🧾 Реальные закупки · октябрь 2026</h3>
-      <small>Перенесены из переписки · без потери существующих данных</small></div></div>
+    const panel=`<article class="card card-pad" style="margin-bottom:18px">
+      <div class="card-head"><div><h3>🧾 Реальные закупки · октябрь 2026</h3><small>Статусы Ozon по скриншотам на 16 октября</small></div></div>
       <div class="kpi-grid" style="margin-top:14px">
-        ${kpi('Подтверждённые расходы',rub(goods+delivery),'Товары '+rub(goods)+' + доставка '+rub(delivery))}
-        ${kpi('Требуют сверки',String(missing.length)+' позиции','Kesto, антислип, киперная лента')}
+        ${kpi('Стоимость заказов',formatPrice(purchaseTotal+193),'Материалы '+formatPrice(purchaseTotal)+' + доставка '+formatPrice(193))}
+        ${kpi('Поступило на склад',counts+' из '+entries.length+' позиций','Нажимайте «Принять» только после получения')}
       </div>
-      <div class="item-meta" style="margin:12px 0">Ориентир по закупке: около ${rub(expected)} за товары + ${rub(193)} за доставку «Куделя»; Ozon доставка 0 ₽.
-        Неразнесённая по чекам разница ≈ ${rub(Math.max(0,expected-goods))}. Она <b>не включена</b> в точные финансовые суммы и склад.</div>
-      ${preview}
-      <div class="item-meta" style="margin-top:12px">Даты партий — даты учёта, не подтверждённые даты оплаты. Неуточнённые покупки видны в реестре, но пока не увеличивают складские остатки и затраты.</div>
+      <div class="item-meta" style="margin:12px 0">Ozon: доставка бесплатно. В заказе есть лента с оплатой при получении 258 ₽; итоговая сумма — стоимость заказанного, не подтверждение всех платежей.</div>
+      ${rows}
+      <div class="item-meta" style="margin-top:12px">LUNE COLOREE: на карточке 644 ₽, ранее фигурировали 580 ₽ — для точных денежных расходов нужна сверка с чеком.</div>
     </article>`;
     return html.replace('<section class="kpi-grid">',panel+'<section class="kpi-grid">');
   };
-  const baseRender = render;
-  render = function renderWithPurchaseVersion() {
-    baseRender();
-    const version = document.querySelector('.sidebar-footer .version b');
-    if (version) version.textContent = '1.2.2';
+  const oldFinance=renderFinance;
+  renderFinance=function renderFinanceOctPurchases(){
+    const base=oldFinance();
+    const received=state.purchaseRegister?.filter(x=>x.status==='Получено').reduce((sum,x)=>sum+(x.amount||0),0)||0;
+    const panel=`<article class="card card-pad" style="margin-bottom:18px">
+      <div class="card-head"><div><h3>Материалы в заказах · октябрь 2026</h3><small>Отдельно от подтверждённых денежных операций</small></div></div>
+      <div class="detail-grid" style="margin-top:12px">
+        <div class="detail-tile"><small>Товары по карточкам</small><b>${formatPrice(purchaseTotal)}</b></div>
+        <div class="detail-tile"><small>С доставкой «Куделя»</small><b>${formatPrice(purchaseTotal+193)}</b></div>
+        <div class="detail-tile"><small>Принято на склад</small><b>${formatPrice(received)}</b></div>
+      </div>
+      <div class="item-meta" style="margin-top:10px">Статусы заказа и оплаты — разные вещи. Неоплаченные/неполученные позиции показаны как обязательства, без ложного зачисления в доступный склад и денежный поток.</div>
+    </article>`;
+    return base.replace('<section class="kpi-grid">',panel+'<section class="kpi-grid">');
   };
-  importPurchases();
+  document.addEventListener('click',function(e){
+    const btn=e.target?.closest?.('[data-vors-receive]');
+    if(!btn)return;
+    e.preventDefault?.();
+    receiveRecord(btn.dataset.vorsReceive);
+  });
+  const oldRender=render;
+  render=function renderOctVersion(){
+    oldRender();
+    const ver=document.querySelector('.sidebar-footer .version b');
+    if(ver)ver.textContent='1.2.3';
+  };
+  upgrade();
   render();
 })();
