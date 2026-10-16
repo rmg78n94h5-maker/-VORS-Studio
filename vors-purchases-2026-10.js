@@ -166,8 +166,12 @@
     </article>`;
     return html.replace('<section class="kpi-grid">',panel+'<section class="kpi-grid">');
   };
+  const baseRender = render;
+  render = function renderWithPurchaseVersion() {
+    baseRender();
+    const version = document.querySelector('.sidebar-footer .version b');
+    if (version) version.textContent = '1.2.2';
+  };
   importPurchases();
-  const version=document.querySelector('.sidebar-footer .version b');
-  if(version) version.textContent='1.2.2';
   render();
 })();
