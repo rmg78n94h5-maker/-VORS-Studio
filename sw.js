@@ -1,4 +1,4 @@
-const CACHE = 'vors-studio-v1.2.1-exact-mark';
+const CACHE = 'vors-studio-v1.2.2-purchases';
 const ASSETS = [
   './',
   './index.html',
@@ -15,6 +15,7 @@ const ASSETS = [
   './vors-1.0-fixes.js',
   './vors-1.1-flow.js',
   './vors-brand-1.2.js',
+  './vors-purchases-2026-10.js',
   './manifest.webmanifest',
   './icons/vors-mark.svg',
   './icons/vors-mark-light.svg',
@@ -37,11 +38,22 @@ self.addEventListener('activate', event => {
 
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+  if (event.request.mode === 'navigate') {
+    event.respondWith(fetch(event.request).then(response => {
+      if (response.ok) {
+        const copy = response.clone();
+        caches.open(CACHE).then(cache => cache.put('./index.html', copy));
+      }
+      return response;
+    }).catch(() => caches.match('./index.html')));
+    return;
+  }
+  event.respondWith(caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
+    if (response.ok) {
       const copy = response.clone();
       caches.open(CACHE).then(cache => cache.put(event.request, copy));
-      return response;
-    }).catch(() => caches.match('./index.html')))
-  );
+    }
+    return response;
+  })));
+
 });
