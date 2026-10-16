@@ -104,6 +104,7 @@
     const rec=state.purchaseRegister.find(x=>x.id==='REG-'+id);
     if(!p||!rec||isReceived(rec)) return;
     const c=ensureCatalogue(p);
+    const receiptDate=new Date().toISOString().slice(0,10);
     let stock=state.materials.find(x=>x.catalogId===c.id);
     if(!stock) {
       stock={
@@ -126,17 +127,17 @@
       stock.stock=oldStock+p.qty;
       stock.pricePerUnit=(oldValue+p.price)/stock.stock;
       stock.lots.unshift({
-        id:lotId,date:ACCOUNT_DATE,batch:'Ozon/Kудель · подтверждённое поступление, октябрь 2026',
+        id:lotId,date:receiptDate,batch:'Ozon/Kудель · подтверждённое поступление, октябрь 2026',
         skeins:p.packs,initialWeight:p.qty,remainingWeight:p.qty,purchasePrice:p.price,
-        note:'Фактическая дата приёмки: '+ACCOUNT_DATE+'. '+(p.note||'')
+        note:'Фактическая дата приёмки: '+receiptDate+'. '+(p.note||'')
       });
       stock.movements.unshift({
-        id:'MOV-OCT26-'+id,date:ACCOUNT_DATE,type:'Поступление',
+        id:'MOV-OCT26-'+id,date:receiptDate,type:'Поступление',
         delta:p.qty,reason:'Подтверждение поступления по реальной закупке'
       });
     }
     rec.status='Получено';
-    rec.receivedAt=ACCOUNT_DATE;
+    rec.receivedAt=receiptDate;
     rec.arrival='Принято на склад';
     saveState();
     render();
